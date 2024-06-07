@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat en ligne</title>
+
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
+
+    <style>
+    </style>
+</head>
+<body>
+
+
+
+        <div class="container">
+            <div class="red"></div>
+            <div class="green">Logs</div>
+            <div class="blue">    
+                <div class="chat-container">
+                    <div class="messages" id="messages">
+                    </div>
+                    <form id="message-form">
+                        <input type="text" id="message-input" placeholder="Entrez votre message...">
+                        <button type="submit">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+            <div class="yellow">Room players</div>
+        </div>
+
+
+    <script>
+        const socket = new WebSocket('ws://localhost:3000');
+
+
+        const username = sessionStorage.getItem('username');
+        const avatar = sessionStorage.getItem('avatar');
+
+
+
+    
+        function addMessageToUI(msg) {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `
+                <img src="${msg.avatar || avatar}" alt="Avatar" class="avatar"> 
+                <span>${msg.username || username}: ${msg.message}</span>`;
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+    
+        socket.addEventListener('message', function(event) {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'chat_message') {
+                addMessageToUI(msg);
+            } else if (msg.type === 'user_disconnected') {
+                const messages = document.getElementById('messages');
+                const disconnectMessageElement = document.createElement('div');
+                disconnectMessageElement.classList.add('disconnect-message');
+                disconnectMessageElement.textContent = `${msg.username} s'est déconnecté azadzoazdazjdazkd`;
+                messages.appendChild(disconnectMessageElement);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        });
+    
+        document.getElementById('message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (message !== '') {
+                socket.send(JSON.stringify({
+                    type: 'chat_message',
+                    message: message,
+                    username: username,
+                    avatar: avatar
+                }));
+                input.value = '';
+            }
+        });
+    
+        socket.addEventListener('open', function(event) {
+            console.log('Connecté au serveur depuis chat.ejs');
+            socket.send(JSON.stringify({
+            type: 'chat_message',
+                message: 's\'est connecté',
+                username: username,
+                avatar: avatar
+            }));});
+
+    
+        socket.addEventListener('close', function(event) {
+            console.log('Déconnecté de chat.ejs');
+            ;}
+        );
+
+
+
+        const uuid = sessionStorage.getItem('uuid');
+
+        window.addEventListener('beforeunload', function(event) {
+            socket.send(JSON.stringify({
+            type: 'chat_message',
+            message: 's\'est déconnecté',
+            username: username,
+            avatar: avatar
+            }));            
+            
+            socket.send(JSON.stringify({
+            type: 'disconnect_user',
+            uuid: uuid,
+            username: username,
+            avatar: avatar
+            }));
+        });
+    
+        socket.addEventListener('error', function(event) {
+            console.error('Error occurred:', event);});
+    </script>
+    
+    
+</body>
+

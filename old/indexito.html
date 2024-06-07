@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choix du nom et de l'avatar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;}
+
+        .container {text-align: center;}
+
+        h1 {margin-bottom: 20px;}
+
+        label {display: block;margin-bottom: 10px;}
+
+        input[type="text"] {padding: 8px;font-size: 16px;width: 250px;margin-bottom: 20px;
+        }
+
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .arrow {
+            cursor: pointer;
+            font-size: 24px;
+            margin: 0 10px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {background-color: #0056b3;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Choisissez votre nom et votre avatar</h1>
+        <form>
+            <label for="name">Nom :</label>
+            <input type="text" id="name" name="name" required>
+            <div class="avatar-container">
+                <div class="arrow" id="left-arrow">&#10094;</div>
+                <img class="avatar" id="current-avatar" src="avatar1.png" alt="Avatar">
+                <div class="arrow" id="right-arrow">&#10095;</div>
+            </div>
+            <label for="game-code">Code de la partie :</label>
+            <input type="text" id="game-code" name="game-code">
+            <button type="button" class="button" id="create-game">Créer une partie</button>
+            <button type="button" class="button" id="join-game">Rejoindre une partie</button>
+        </form>
+    </div>
+
+    <script>
+        const avatars = ['avatar3.png', 'avatar2.png', 'avatar3.png', 'avatar4.png','avatar5.png','avatar6.png','avatar7.png','avatar8.png','avatar9.png'];
+        let currentIndex = 0;
+        const currentAvatar = document.getElementById('current-avatar');
+
+        function updateAvatar() {
+            currentAvatar.src = avatars[currentIndex];
+        }
+        
+
+        function nextAvatar() {
+            currentIndex = (currentIndex + 1) % avatars.length;
+            updateAvatar();
+        }
+
+        function prevAvatar() {
+            currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;
+            updateAvatar();
+        }
+
+        document.getElementById('left-arrow').addEventListener('click', prevAvatar);
+        document.getElementById('right-arrow').addEventListener('click', nextAvatar);
+
+        document.getElementById('create-game').addEventListener('click', function() {
+            const name = document.getElementById('name').value.trim();
+            const avatar = avatars[currentIndex];
+            const gameCode = document.getElementById('game-code').value.trim();
+            createGame(name, avatar, gameCode);
+        });
+
+        document.getElementById('join-game').addEventListener('click', function() {
+            const name = document.getElementById('name').value.trim();
+            const avatar = avatars[currentIndex];
+            const gameCode = document.getElementById('game-code').value.trim();
+            joinGame(name, avatar, gameCode);
+        });
+
+        function createGame(name, avatar, gameCode) {
+            // Code pour créer une partie
+            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
+        }
+
+        function joinGame(name, avatar, gameCode) {
+            // Code pour rejoindre une partie
+            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
+        }
+    </script>
+</body>
+</html>

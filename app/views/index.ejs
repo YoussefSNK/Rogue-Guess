@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choix du nom et de l'avatar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;}
+
+        .container {text-align: center;}
+
+        h1 {margin-bottom: 20px;}
+
+        label {display: block;margin-bottom: 10px;}
+
+        input[type="text"] {padding: 8px;font-size: 16px;width: 250px;margin-bottom: 20px;
+        }
+
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .arrow {cursor: pointer;font-size: 24px;margin: 0 10px;}
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {background-color: #0056b3;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Choisissez votre nom et votre avatar</h1>
+        <form>
+            <label for="name">Nom :</label>
+            <input type="text" id="name" name="name" required>
+            <div class="avatar-container">
+                <div class="arrow" id="left-arrow">&#10094;</div>
+                <img class="avatar" id="current-avatar" src="avatar1.png" alt="Avatar">
+                <div class="arrow" id="right-arrow">&#10095;</div>
+            </div>
+            <label for="game-code">Code de la partie :</label>
+            <input type="text" id="game-code" name="game-code">
+            <button type="button" class="button" id="create-game">Créer une partie</button>
+            <button type="button" class="button" id="join-game">Rejoindre une partie</button>
+        </form>
+    </div>
+
+
+    <script>
+        const socket = new WebSocket('ws://localhost:3000');
+    
+        const avatars = ['avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png', 'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png', 'avatar9.png'];
+        let currentIndex = 0;
+        const currentAvatar = document.getElementById('current-avatar');
+    
+        function changeAvatar(side) {
+            if (side == "next"){currentIndex=(currentIndex + 1) % avatars.length;
+            }else{currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;}
+            currentAvatar.src = avatars[currentIndex];
+        }
+
+
+        document.getElementById('left-arrow').addEventListener('click', function() {
+            changeAvatar("prev");
+        });
+
+        document.getElementById('right-arrow').addEventListener('click', function() {
+            changeAvatar("next");
+        });
+
+        document.getElementById('create-game').addEventListener('click', function(e) {
+            // e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const avatar = avatars[currentIndex];
+            const gameCode = document.getElementById('game-code').value.trim();
+            createGame(name, avatar, gameCode);
+        });
+    
+        function createGame(name, avatar, gameCode) {
+            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
+            sessionStorage.setItem('username', name);
+            sessionStorage.setItem('avatar', avatar);
+            const uuid = uuidv4();
+            sessionStorage.setItem('uuid', uuid);
+            const userInfo = { username: name, avatar: avatar, uuid: uuid };
+            socket.send(JSON.stringify({ type: 'user_info', userInfo: userInfo }));
+            window.location.href = `/chat?gameCode=${encodeURIComponent(gameCode)}`;
+        }
+    
+        function joinGame(name, avatar, gameCode) {
+            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
+        }
+
+        function uuidv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        socket.addEventListener('open', function(event) {
+            console.log('Connecté au serveur depuis index.ejs');
+        });
+
+        socket.addEventListener('close', function(event) {
+            console.log('Déconnecté d\'index.ejs');
+        });
+
+        socket.addEventListener('error', function(event) {
+            console.error('Error occurred:', event);
+        });
+    </script>
+
+</body>

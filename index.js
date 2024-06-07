@@ -1,51 +1,79 @@
+// index.js
 const express = require('express');
-const app = express();
 const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+const WebSocket = require('ws');
 const path = require('path');
-const PORT = process.env.PORT || 3000;
 
-// Liste des éléments
-let specialItems = ['garen', 'veigar', 'rengar', 'ryze', 'karthus'];
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-// Fonction pour générer un nom aléatoire
-function generateRandomName() {
-    const adjectives = ['le dangereux', 'Nsoki', '', '', 'Audacieux', '', '', '', 'Rigolo'];
-    const nouns = ['Demonio', 'Spectreur', 'Hagura', 'Molesto', 'Bonzai', 'Maj Nwar', 'Stefan', 'Psytan', 'Ostario'];
-    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-    return `${randomNoun} ${randomAdjective}`;
-}
-
-app.use(express.static(path.join(__dirname, 'images')));
+app.set('views', path.join(__dirname, 'app', 'views'));
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.render('index');
 });
-io.on('connection', (socket) => {
-    const username = generateRandomName();
-    
-    socket.emit('chat message', `Bienvenue, ${username}!`);
 
-    socket.broadcast.emit('chat message', `${username} s'est connecté`);
+app.get('/chat', (req, res) => {
+    res.render('chat', { gameCode: req.query.gameCode });
+}); 
 
-    socket.on('chat message', (msg) => {
-        const index = specialItems.indexOf(msg.toLowerCase());
-        if (index !== -1) {
-            io.emit('special item', msg);
-            specialItems.splice(index, 1);
-        } else {
-            io.emit('chat message', `${username}: ${msg}`);
+let users = [];
+
+wss.on('connection', (ws) => {
+    console.log('wss.on(\'connection\')');
+    ws.on('message', (message) => {
+        const data = JSON.parse(message);
+
+        console.log("data.type =", data.type.trim())
+        switch(data.type.trim()){
+            case 'user_info':
+                users.push([data.userInfo.username, data.userInfo.avatar, data.userInfo.uuid]);
+                console.log(users)
+                break;
+            case 'chat_message':
+                console.log('Message reçu:', data.message);
+                broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username}));
+                break;
+            case 'disconnect_user':
+                console.log("disconnect_user a proc");
+                console.log("uuid =", data.uuid);
+                console.log("1", users);
+                users = users.filter(user => !user.includes(data.uuid));
+                console.log("2", users);
+                break;
+            default:
+                break;
         }
     });
 
-    socket.on('disconnect', () => {
-        io.emit('chat message', `${username} s'est déconnecté`);
+    ws.on('close', () => {
+        console.log('--- ws.on(\'close\') ---');
     });
 });
 
+
+
+
+
+// Les fonctions
+
+function broadcast(message) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
+
+
+
+// Jsp trop
+
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Listening on *:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
