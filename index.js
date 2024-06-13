@@ -5,8 +5,6 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const logRoutes = require('./app/routes/logRoutes');
 
-// Vérifier si logRoutes est correctement importé
-console.log('logRoutes:', logRoutes); 
 
 const app = express();
 const server = http.createServer(app);

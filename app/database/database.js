@@ -14,7 +14,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Créer la table Logs si elle n'existe pas déjà et insérer des données
 function createTables() {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS Logs (
@@ -22,25 +21,36 @@ function createTables() {
       Titre TEXT NOT NULL,
       Description TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS Entity (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Licence TEXT NOT NULL,
+      Image TEXT NOT NULL
+    );
   `;
   
   db.run(createTableQuery, (err) => {
     if (err) {
       console.error('Erreur lors de la création de la table:', err.message);
     } else {
-      console.log('Table Logs créée avec succès.');
+      console.log('Table Logs et Entity créées avec succès.');
       insertInitialData();
     }
   });
 }
 
-// Insérer des données initiales dans la table Logs
 function insertInitialData() {
   const insertQuery = `
     INSERT INTO Logs (Titre, Description) VALUES
-    ('Titre 1', 'Description 1'),
-    ('Titre 2', 'Description 2'),
-    ('Titre 3', 'Description 3');
+    ('Update 1.0', 'Rien ajouté'),
+    ('Update 1.1', "Ajout du choix de l'avatar"),
+    ('Update 2.0', "Ajout de l'ajout");
+
+    INSERT INTO Entity (Name, Licence, Image) VALUES
+    ('Xavier Foster', 'Inazuma Eleven', 'Xavier Foster.png'),
+    ('Aitor Cazador', 'Inazuma Eleven', 'Aitor Cazador.png'),
+    ("Veigar", "League of legends", "Veigar.png");
   `;
   
   db.run(insertQuery, (err) => {
