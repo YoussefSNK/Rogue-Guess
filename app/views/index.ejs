@@ -37,9 +37,32 @@
             border-radius: 50%;
             border: 2px solid transparent;
             transition: border-color 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
-        .arrow {cursor: pointer;font-size: 24px;margin: 0 10px;}
+        .avatar.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .avatar.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            cursor: pointer;
+            user-select: none;
+            padding: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .arrow:hover {
+            color: #007BFF;
+        }
+
 
         .button {
             padding: 10px 20px;
@@ -80,13 +103,26 @@
         const avatars = ['avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png', 'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png', 'avatar9.png'];
         let currentIndex = 0;
         const currentAvatar = document.getElementById('current-avatar');
-    
+
         function changeAvatar(side) {
-            if (side == "next"){currentIndex=(currentIndex + 1) % avatars.length;
-            }else{currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;}
-            currentAvatar.src = avatars[currentIndex];
+            currentAvatar.classList.remove('visible');
+            currentAvatar.classList.add('hidden');
+            
+            setTimeout(() => {
+                if (side === "next") {
+                    currentIndex = (currentIndex + 1) % avatars.length;
+                } else {
+                    currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;
+                }
+                currentAvatar.src = avatars[currentIndex];
+                currentAvatar.classList.remove('hidden');
+                currentAvatar.classList.add('visible');
+            }, 100); // Correspond à la durée de l'animation CSS
         }
 
+        window.onload = () => {
+            currentAvatar.classList.add('visible');
+        };
 
         document.getElementById('left-arrow').addEventListener('click', function() {
             changeAvatar("prev");
