@@ -45,17 +45,19 @@ wss.on('connection', (ws) => {
         switch(data.type.trim()) {
             case 'user_info':
                 users.push([data.userInfo.username, data.userInfo.avatar, data.userInfo.uuid]);
+                
                 console.log(users);
                 break;
             case 'chat_message':
                 console.log('Message reçu:', data.message);
+                console.log('de la part de',data.username, 'avec la pp', data.avatar);
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'disconnect_user':
                 console.log("disconnect_user a proc");
                 console.log("uuid =", data.uuid);
                 console.log("Avant déconnexion", users);
-                users = users.filter(user => !user.includes(data.uuid));
+                // users = users.filter(user => !user.includes(data.uuid)); // théoriquement ça ça tej les users qui viennent de se déco
                 console.log("Après déconnexion", users);
                 break;
             default:

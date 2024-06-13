@@ -135,7 +135,7 @@ body {
     display: flex;
     width: 100%;
     height: 100%;
-    background-color: #2980b9;
+    /* background-color: #2980b9; */
     padding: 5px;
     box-sizing: border-box;
     max-width: 100%; /* Fixe la largeur maximale */

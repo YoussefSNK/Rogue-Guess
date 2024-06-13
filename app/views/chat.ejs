@@ -27,7 +27,10 @@
                     </form>
                 </div>
             </div>
-            <div class="yellow">Room players</div>
+            <div class="yellow">
+                <div class="playerList" id="playerList">
+                </div>
+            </div>
         </div>
 
 
@@ -51,12 +54,29 @@
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
         }
+
+        function addImageToUI(avatar, uuid){
+            const images = document.getElementById('playerList');
+            const playerElement = document.createElement('div');
+            playerElement.classList.add('player');
+            playerElement.innerHTML = `
+                <img src="${avatar}" alt="Avatar" class="avatar">`;
+        }
+
+
     
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
             if (msg.type === 'chat_message') {
                 addMessageToUI(msg);
-            } else if (msg.type === 'user_disconnected') {
+            } 
+            
+            else if (msg.type === 'user_info'){
+                addImageToUI(msg.avatar, msg.uuid)
+            }
+            
+            
+            else if (msg.type === 'user_disconnected') {
                 const messages = document.getElementById('messages');
                 const disconnectMessageElement = document.createElement('div');
                 disconnectMessageElement.classList.add('disconnect-message');
