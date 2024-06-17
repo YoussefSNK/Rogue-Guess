@@ -5,7 +5,6 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const logRoutes = require('./app/routes/logRoutes');
 
-
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
@@ -44,9 +43,8 @@ wss.on('connection', (ws) => {
         console.log("data.type =", data.type.trim());
         switch(data.type.trim()) {
             case 'user_info':
-                users.push([data.userInfo.username, data.userInfo.avatar, data.userInfo.uuid]);
-                
-                console.log(users);
+                users.push({ username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid });
+                broadcastUsers();
                 break;
             case 'chat_message':
                 console.log('Message reçu:', data.message);
@@ -57,8 +55,9 @@ wss.on('connection', (ws) => {
                 console.log("disconnect_user a proc");
                 console.log("uuid =", data.uuid);
                 console.log("Avant déconnexion", users);
-                // users = users.filter(user => !user.includes(data.uuid)); // théoriquement ça ça tej les users qui viennent de se déco
+                users = users.filter(user => user.uuid !== data.uuid);
                 console.log("Après déconnexion", users);
+                broadcastUsers();
                 break;
             default:
                 break;
@@ -70,13 +69,19 @@ wss.on('connection', (ws) => {
     });
 });
 
-// Fonction de diffusion
+// Fonction de diffusion des messages
 function broadcast(message) {
     wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(message);
         }
     });
+}
+
+// Fonction de diffusion de la liste des utilisateurs
+function broadcastUsers() {
+    const userListMessage = JSON.stringify({ type: 'user_list', users: users });
+    broadcast(userListMessage);
 }
 
 // Démarrer le serveur HTTP pour WebSocket
