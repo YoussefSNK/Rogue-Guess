@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    color: #fff; /* Changer la couleur du texte en blanc */
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #fff; /* Changer la couleur du texte en blanc */
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: #fff; /* Changer la couleur du texte en blanc */
+}
+
+input[type="text"] {
+    padding: 8px;
+    font-size: 16px;
+    width: 250px;
+    margin-bottom: 20px;
+    background-color: #333; /* Fond des champs de texte en gris foncé */
+    color: #fff; /* Texte des champs de texte en blanc */
+    border: 1px solid #555; /* Bordure des champs de texte en gris foncé */
+    border-radius: 5px;
+}
+
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.avatar.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.avatar.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+.arrow {
+    font-size: 2rem;
+    cursor: pointer;
+    user-select: none;
+    padding: 0 10px;
+    transition: color 0.3s ease;
+    color: #fff; /* Changer la couleur des flèches en blanc */
+}
+
+.arrow:hover {
+    color: #007BFF; /* Changer la couleur au survol */
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}

@@ -121,10 +121,10 @@ function insertInitialData() {
     ("Kennen", "League of legends", "Kennen.png")
     ;
 
-    INSERT INTO Request (Title, SQL_Request) VALUES
-    ("Tous les personnages d'Inazuma Eleven", "SELECT * FROM Entity WHERE Licence = 'Inazuma Eleven'"),
-    ("Tous les champions de League of legends", "SELECT * FROM Entity WHERE Licence = 'League of legends'"),
-    ("azrkadzd", "aozdjiazjdoia");
+    INSERT INTO Request (Title, SQL_Request, Image) VALUES
+    ("Tous les personnages d'Inazuma Eleven", "SELECT * FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
+    ("Tous les champions de League of legends", "SELECT * FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
+    ("azrkadzd", "aozdjiazjdoia" "inazuma.png");
 
   `;
   

@@ -4,83 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choix du nom et de l'avatar</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;}
 
-        .container {text-align: center;}
+    <link rel="stylesheet" type="text/css" href="css/indexejs.css" />
 
-        h1 {margin-bottom: 20px;}
-
-        label {display: block;margin-bottom: 10px;}
-
-        input[type="text"] {padding: 8px;font-size: 16px;width: 250px;margin-bottom: 20px;
-        }
-
-        .avatar-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            transition: border-color 0.3s ease;
-            opacity: 0;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .avatar.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .avatar.hidden {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        .arrow {
-            font-size: 2rem;
-            cursor: pointer;
-            user-select: none;
-            padding: 0 10px;
-            transition: color 0.3s ease;
-        }
-
-        .arrow:hover {
-            color: #007BFF;
-        }
-
-
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .button:hover {background-color: #0056b3;}
-    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Choisissez votre nom et votre avatar</h1>
+        <h1>Bienvenue</h1>
         <form>
             <label for="name">Nom :</label>
             <input type="text" id="name" name="name" required>
