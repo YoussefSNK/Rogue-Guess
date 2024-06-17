@@ -32,7 +32,8 @@ function createTables() {
     CREATE TABLE IF NOT EXISTS Request (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       Title TEXT NOT NULL,
-      SQL_Request TEXT NOT NULL
+      SQL_Request TEXT NOT NULL,
+      Image TEXT NOT NULL
     );
   `;
   
