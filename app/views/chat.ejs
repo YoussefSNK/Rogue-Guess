@@ -10,40 +10,30 @@
     <style>
     </style>
 </head>
+
 <body>
-
-
-
-        <div class="container">
-            <div class="red"></div>
-            <div class="green">Logs</div>
-            <div class="blue">    
-                <div class="chat-container">
-                    <div class="messages" id="messages">
-                    </div>
-                    <form id="message-form">
-                        <input type="text" id="message-input" placeholder="Entrez votre message...">
-                        <button type="submit">Envoyer</button>
-                    </form>
-                </div>
-            </div>
-            <div class="yellow">
-                <div class="playerList" id="playerList">
-                </div>
+    <div class="container">
+        <div class="red"></div>
+        <div class="green">Logs</div>
+        <div class="blue">    
+            <div class="chat-container">
+                <div class="messages" id="messages"></div>
+                <form id="message-form">
+                    <input type="text" id="message-input" placeholder="Entrez votre message...">
+                    <button type="submit">Envoyer</button>
+                </form>
             </div>
         </div>
-
+        <div class="yellow">
+            <div class="playerList" id="playerList"></div>
+        </div>
+    </div>
 
     <script>
         const socket = new WebSocket('ws://localhost:3000');
-
-
         const username = sessionStorage.getItem('username');
         const avatar = sessionStorage.getItem('avatar');
 
-
-
-    
         function addMessageToUI(msg) {
             const messages = document.getElementById('messages');
             const messageElement = document.createElement('div');
@@ -55,37 +45,33 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        function addImageToUI(avatar, uuid){
-            const images = document.getElementById('playerList');
-            const playerElement = document.createElement('div');
-            playerElement.classList.add('player');
-            playerElement.innerHTML = `
-                <img src="${avatar}" alt="Avatar" class="avatar">`;
+        function updatePlayerList(users) {
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = ''; // Clear the current list
+            users.forEach(user => {
+                const playerElement = document.createElement('div');
+                playerElement.classList.add('player');
+                playerElement.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="avatar"> ${user.username}`;
+                playerList.appendChild(playerElement);
+            });
         }
 
-
-    
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
             if (msg.type === 'chat_message') {
                 addMessageToUI(msg);
-            } 
-            
-            else if (msg.type === 'user_info'){
-                addImageToUI(msg.avatar, msg.uuid)
-            }
-            
-            
-            else if (msg.type === 'user_disconnected') {
+            } else if (msg.type === 'user_list') {
+                updatePlayerList(msg.users);
+            } else if (msg.type === 'user_disconnected') {
                 const messages = document.getElementById('messages');
                 const disconnectMessageElement = document.createElement('div');
                 disconnectMessageElement.classList.add('disconnect-message');
-                disconnectMessageElement.textContent = `${msg.username} s'est déconnecté azadzoazdazjdazkd`;
+                disconnectMessageElement.textContent = `${msg.username} s'est déconnecté`;
                 messages.appendChild(disconnectMessageElement);
                 messages.scrollTop = messages.scrollHeight;
             }
         });
-    
+
         document.getElementById('message-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('message-input');
@@ -100,46 +86,37 @@
                 input.value = '';
             }
         });
-    
+
         socket.addEventListener('open', function(event) {
             console.log('Connecté au serveur depuis chat.ejs');
             socket.send(JSON.stringify({
-            type: 'chat_message',
-                message: 's\'est connecté',
-                username: username,
-                avatar: avatar
-            }));});
+                type: 'user_info',
+                userInfo: {
+                    username: username,
+                    avatar: avatar,
+                    uuid: sessionStorage.getItem('uuid')
+                }
+            }));
+        });
 
-    
         socket.addEventListener('close', function(event) {
             console.log('Déconnecté de chat.ejs');
-            ;}
-        );
-
-
+        });
 
         const uuid = sessionStorage.getItem('uuid');
 
         window.addEventListener('beforeunload', function(event) {
             socket.send(JSON.stringify({
-            type: 'chat_message',
-            message: 's\'est déconnecté',
-            username: username,
-            avatar: avatar
-            }));            
-            
-            socket.send(JSON.stringify({
-            type: 'disconnect_user',
-            uuid: uuid,
-            username: username,
-            avatar: avatar
+                type: 'disconnect_user',
+                uuid: uuid,
+                username: username,
+                avatar: avatar
             }));
         });
-    
+
         socket.addEventListener('error', function(event) {
-            console.error('Error occurred:', event);});
+            console.error('Error occurred:', event);
+        });
     </script>
-    
-    
 </body>
 
