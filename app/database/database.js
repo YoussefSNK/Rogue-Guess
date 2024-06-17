@@ -15,6 +15,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 function createTables() {
+  const dropTablesQuery = `
+    DROP TABLE IF EXISTS Logs;
+    DROP TABLE IF EXISTS Entity;
+    DROP TABLE IF EXISTS Request;
+  `;
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS Logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,11 +42,20 @@ function createTables() {
     );
   `;
   
+  db.run(dropTablesQuery, (err) => {
+    if (err) {
+      console.error('Erreur lors de la suppression de la table:', err.message);
+    } else {
+      console.log('Suppression réussie !');
+    }
+  });
+
   db.run(createTableQuery, (err) => {
     if (err) {
       console.error('Erreur lors de la création de la table:', err.message);
     } else {
       console.log('Table Logs et Entity créées avec succès.');
+
       insertInitialData();
     }
   });
@@ -121,6 +135,7 @@ function insertInitialData() {
     ("Kayn", "League of legends", "Kayn.png"),
     ("Kennen", "League of legends", "Kennen.png")
     ;
+
 
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Tous les personnages d'Inazuma Eleven", "SELECT * FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
