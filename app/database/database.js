@@ -20,20 +20,25 @@ function createTables() {
     DROP TABLE IF EXISTS Entity;
     DROP TABLE IF EXISTS Request;
   `;
-  const createTableQuery = `
+
+  const createTableQueryLogs = `
     CREATE TABLE IF NOT EXISTS Logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       Titre TEXT NOT NULL,
       Description TEXT NOT NULL
     );
+  `;
 
+  const createTableQueryEntity = `
     CREATE TABLE IF NOT EXISTS Entity (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       Name TEXT NOT NULL,
       Licence TEXT NOT NULL,
       Image TEXT NOT NULL
     );
+  `;
 
+  const createTableQueryRequest = `
     CREATE TABLE IF NOT EXISTS Request (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       Title TEXT NOT NULL,
@@ -41,33 +46,55 @@ function createTables() {
       Image TEXT NOT NULL
     );
   `;
-  
-  db.run(dropTablesQuery, (err) => {
-    if (err) {
-      console.error('Erreur lors de la suppression de la table:', err.message);
-    } else {
-      console.log('Suppression réussie !');
-    }
-  });
 
-  db.run(createTableQuery, (err) => {
-    if (err) {
-      console.error('Erreur lors de la création de la table:', err.message);
-    } else {
-      console.log('Table Logs et Entity créées avec succès.');
+  db.serialize(() => {
+    // Supprimer les tables existantes
+    db.run(dropTablesQuery, (err) => {
+      if (err) {
+        console.error('Erreur lors de la suppression des tables:', err.message);
+      } else {
+        console.log('Tables supprimées avec succès.');
+      }
 
-      insertInitialData();
-    }
+      // Créer les nouvelles tables après avoir supprimé les anciennes
+      db.run(createTableQueryLogs, (err) => {
+        if (err) {
+          console.error('Erreur lors de la création de la table Logs:', err.message);
+        } else {
+          console.log('Table Logs créée avec succès.');
+        }
+      });
+
+      db.run(createTableQueryEntity, (err) => {
+        if (err) {
+          console.error('Erreur lors de la création de la table Entity:', err.message);
+        } else {
+          console.log('Table Entity créée avec succès.');
+        }
+      });
+
+      db.run(createTableQueryRequest, (err) => {
+        if (err) {
+          console.error('Erreur lors de la création de la table Request:', err.message);
+        } else {
+          console.log('Table Request créée avec succès.');
+          // Insérer les données initiales après la création des tables
+          insertInitialData();
+        }
+      });
+    });
   });
 }
 
 function insertInitialData() {
-  const insertQuery = `
+  const insertQueryLogs = `
     INSERT INTO Logs (Titre, Description) VALUES
     ('Update 1.0', 'Rien ajouté'),
     ('Update 1.1', "Ajout du choix de l'avatar"),
     ('Update 2.0', "Ajout de l'ajout");
+  `;
 
+  const insertQueryEntity = `
     INSERT INTO Entity (Name, Licence, Image) VALUES
     ('Xavier Foster', 'Inazuma Eleven', 'Xavier Foster.png'),
     ('Aitor Cazador', 'Inazuma Eleven', 'Aitor Cazador.png'),
@@ -133,22 +160,37 @@ function insertInitialData() {
     ("Katarina", "League of legends", "Katarina.png"),
     ("Kayle", "League of legends", "Kayle.png"),
     ("Kayn", "League of legends", "Kayn.png"),
-    ("Kennen", "League of legends", "Kennen.png")
-    ;
+    ("Kennen", "League of legends", "Kennen.png");
+  `;
 
-
+  const insertQueryRequest = `
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Tous les personnages d'Inazuma Eleven", "SELECT * FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
     ("Tous les champions de League of legends", "SELECT * FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
-    ("azrkadzd", "aozdjiazjdoia" "inazuma.png");
-
+    ("azrkadzd", "aozdjiazjdoia", "inazuma.png");
   `;
-  
-  db.run(insertQuery, (err) => {
+
+  db.run(insertQueryLogs, (err) => {
     if (err) {
-      console.error('Erreur lors de l\'insertion des données initiales:', err.message);
+      console.error('Erreur lors de l\'insertion des données initiales dans Logs:', err.message);
     } else {
-      console.log('Données initiales insérées avec succès.');
+      console.log('Données des Logs insérées avec succès.');
+    }
+  });
+
+  db.run(insertQueryEntity, (err) => {
+    if (err) {
+      console.error('Erreur lors de l\'insertion des données initiales dans Entity:', err.message);
+    } else {
+      console.log('Données des Entity insérées avec succès.');
+    }
+  });
+
+  db.run(insertQueryRequest, (err) => {
+    if (err) {
+      console.error('Erreur lors de l\'insertion des données initiales dans Request:', err.message);
+    } else {
+      console.log('Données des Request insérées avec succès.');
     }
   });
 }

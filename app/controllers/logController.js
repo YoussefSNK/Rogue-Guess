@@ -22,3 +22,13 @@ exports.getLogs = (req, res) => {
     }
   });
 };
+
+exports.getRequests = (req, res) => {
+  Log.getRequests((err, requests) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else {
+      res.json(requests);
+    }
+  });
+};

@@ -15,3 +15,10 @@ exports.getLogs = (callback) => {
     callback(err, rows);
   });
 };
+
+exports.getRequests = (callback) => {
+  const query = 'SELECT * FROM Request';
+  db.all(query, [], (err, rows) => {
+    callback(err, rows);
+  });
+};

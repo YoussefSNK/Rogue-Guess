@@ -11,7 +11,7 @@
 
 <body>
     <div class="container">
-        <div class="red"></div>
+        <div class="red" id="image-container"></div>
         <div class="green">Logs</div>
         <div class="blue">    
             <div class="chat-container">
@@ -53,6 +53,26 @@
                 playerList.appendChild(playerElement);
             });
         }
+
+
+        function loadImages() {
+            fetch('/api/images')
+                .then(response => response.json())
+                .then(images => {
+                    const imageContainer = document.getElementById('image-container');
+                    images.forEach(image => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = "images/list_icons/" + image.Image; // Assurez-vous que "Image" est le nom de la colonne dans votre table
+                        imgElement.alt = "Request Image";
+                        imgElement.classList.add('request-image');
+                        imageContainer.appendChild(imgElement);
+                    });
+                })
+                .catch(error => console.error('Erreur lors du chargement des images:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', loadImages);
+
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
