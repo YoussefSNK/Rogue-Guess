@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat en ligne</title>
-
     <link rel="stylesheet" type="text/css" href="css/styles.css" />
-
 </head>
 
 <body>
@@ -54,7 +52,6 @@
             });
         }
 
-
         function loadImages() {
             fetch('/api/images')
                 .then(response => response.json())
@@ -62,9 +59,15 @@
                     const imageContainer = document.getElementById('image-container');
                     images.forEach(image => {
                         const imgElement = document.createElement('img');
-                        imgElement.src = "images/list_icons/" + image.Image; // Assurez-vous que "Image" est le nom de la colonne dans votre table
+                        imgElement.src = "images/list_icons/" + image.Image;
                         imgElement.alt = "Request Image";
                         imgElement.classList.add('request-image');
+                        imgElement.addEventListener('click', () => {
+                            socket.send(JSON.stringify({
+                                type: 'start_game',
+                                gameCode: image.Image.replace('.png', '') // Exemple d'utilisation d'un code de jeu
+                            }));
+                        });
                         imageContainer.appendChild(imgElement);
                     });
                 })
@@ -72,7 +75,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadImages);
-
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
@@ -87,6 +89,8 @@
                 disconnectMessageElement.textContent = `${msg.username} s'est déconnecté`;
                 messages.appendChild(disconnectMessageElement);
                 messages.scrollTop = messages.scrollHeight;
+            } else if (msg.type === 'redirect_game') {
+                window.location.href = `/game?gameCode=${msg.gameCode}`;
             }
         });
 
@@ -137,4 +141,4 @@
         });
     </script>
 </body>
-
+</html>

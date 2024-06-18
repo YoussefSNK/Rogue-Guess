@@ -29,10 +29,15 @@ app.get('/chat', (req, res) => {
     res.render('chat', { gameCode: req.query.gameCode });
 });
 
+app.get('/game', (req, res) => {
+    res.render('game', { gameCode: req.query.gameCode });
+});
+
 app.use('/api', logRoutes);
 
 // WebSocket
 let users = [];
+let rooms = {};
 
 wss.on('connection', (ws) => {
     console.log('Nouvelle connexion WebSocket');
@@ -40,24 +45,22 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
 
-        console.log("data.type =", data.type.trim());
         switch(data.type.trim()) {
             case 'user_info':
                 users.push({ username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid });
                 broadcastUsers();
                 break;
             case 'chat_message':
-                console.log('Message reçu:', data.message);
-                console.log('de la part de',data.username, 'avec la pp', data.avatar);
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'disconnect_user':
-                console.log("disconnect_user a proc");
-                console.log("uuid =", data.uuid);
-                console.log("Avant déconnexion", users);
                 users = users.filter(user => user.uuid !== data.uuid);
-                console.log("Après déconnexion", users);
                 broadcastUsers();
+                break;
+            case 'start_game':
+                const gameCode = data.gameCode;
+                rooms[gameCode] = users.slice();
+                broadcast(JSON.stringify({ type: 'redirect_game', gameCode: gameCode }));
                 break;
             default:
                 break;
