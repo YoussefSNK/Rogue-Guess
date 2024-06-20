@@ -71,7 +71,7 @@ body {
 .message .avatar {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 10%;
     margin-right: 15px;
 }
 
@@ -120,8 +120,27 @@ body {
 .red {
     grid-column: 1 / 4;
     grid-row: 1 / 3;
-    background-color: red;
+    background-color: #e74c3c;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 90%;
+    height: 90%;
 }
+
+.red img {
+    max-width: 100px;
+    max-height: 100px;
+    margin: 10px;
+    border-radius: 8px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.red img:hover {
+    transform: scale(1.1);
+}
+
 
 .green {
     grid-column: 1 / 1;
@@ -135,7 +154,6 @@ body {
     display: flex;
     width: 100%;
     height: 100%;
-    /* background-color: #2980b9; */
     padding: 5px;
     box-sizing: border-box;
     max-width: 100%; /* Fixe la largeur maximale */
@@ -148,5 +166,74 @@ body {
 .yellow {
     grid-column: 4 / 4;
     grid-row: 1 / 4;
-    background-color: yellow;
+    background-color: #f1c40f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.playerList {
+    width: 100%;
+}
+
+.player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 15%;
+}
+
+.player img {
+    border-radius: 15%;
+    margin-bottom: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.player div {
+    text-align: center;
+    color: #34495e;
+    font-weight: bold;
+    border-radius: 15%;
+}
+
+.player:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+
+#firstPlayer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+#firstPlayer img {
+    width: 90%;
+    height: auto;
+    border-radius: 15%;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#otherPlayers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+#otherPlayers .player img {
+    width: 100%;
+    height: auto;
 }

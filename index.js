@@ -35,7 +35,10 @@ app.get('/game', (req, res) => {
 
 app.use('/api', logRoutes);
 
-// WebSocket
+function generateGameCode() {
+    return crypto.randomBytes(3).toString('hex');
+}
+
 let users = [];
 let rooms = {};
 
