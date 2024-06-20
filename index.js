@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const path = require('path');
 const bodyParser = require('body-parser');
 const logRoutes = require('./app/routes/logRoutes');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -43,39 +44,51 @@ let users = [];
 let rooms = {};
 
 wss.on('connection', (ws) => {
-    console.log('Nouvelle connexion WebSocket');
-
     ws.on('message', (message) => {
         const data = JSON.parse(message);
 
         switch(data.type.trim()) {
             case 'user_info':
-                users.push({ username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid });
+                let user = users.find(user => user.uuid === data.userInfo.uuid);
+                if (!user) {
+                    user = { username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid, ws: ws };
+                    users.push(user);
+                    console.log(users);
+                } else {
+                    user.ws = ws; // Mettre à jour la référence WebSocket
+                }
                 broadcastUsers();
-                break;
-            case 'chat_message':
-                broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'disconnect_user':
                 users = users.filter(user => user.uuid !== data.uuid);
                 broadcastUsers();
                 break;
-            case 'start_game':
-                const gameCode = data.gameCode;
-                rooms[gameCode] = users.slice();
-                broadcast(JSON.stringify({ type: 'redirect_game', gameCode: gameCode }));
+            case 'chat_message':
+                broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
+            case 'start_game':
+                const gameCode = generateGameCode();
+                rooms[gameCode] = { users: users.slice(), theme: data.theme, currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
+                broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
+                users = []; // Vider la liste des utilisateurs après les avoir déplacés dans une salle
+                startTurn(gameCode);
+                break;
+            case 'request_game_users':
+                const roomCode = data.gameCode;
+                const room = rooms[roomCode] || { users: [], theme: '' };
+                ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar })), theme: room.theme }));
+                break;
+            
             default:
                 break;
         }
     });
 
     ws.on('close', () => {
-        console.log('Connexion WebSocket fermée');
     });
 });
 
-// Fonction de diffusion des messages
+// Fonction de diffusion des messages à tous les clients WebSocket connectés
 function broadcast(message) {
     wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -84,13 +97,38 @@ function broadcast(message) {
     });
 }
 
-// Fonction de diffusion de la liste des utilisateurs
+// Fonction de diffusion des utilisateurs connectés à tous les clients WebSocket
 function broadcastUsers() {
     const userListMessage = JSON.stringify({ type: 'user_list', users: users });
     broadcast(userListMessage);
 }
 
-// Démarrer le serveur HTTP pour WebSocket
+// Fonction pour démarrer le tour de jeu
+function startTurn(gameCode) {
+    const room = rooms[gameCode];
+    if (!room) return;
+
+    room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.users.length;
+    room.turnEndTime = Date.now() + 5000;
+
+    broadcastToRoom(gameCode, JSON.stringify({
+        type: 'turn_update',
+        currentPlayer: room.users[room.currentPlayerIndex].username,
+        turnEndTime: room.turnEndTime
+    }));
+
+    setTimeout(() => startTurn(gameCode), 5000);
+}
+
+function broadcastToRoom(gameCode, message) {
+    const roomUsers = rooms[gameCode]?.users || [];
+    roomUsers.forEach(user => {
+        if (user.ws && user.ws.readyState === WebSocket.OPEN) {
+            user.ws.send(message);
+        }
+    });
+}
+
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

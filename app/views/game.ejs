@@ -5,26 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeu en ligne</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            flex-direction: column;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: absolute;
+        }
+        .center {
+            text-align: center;
+        }
+        .center input {
+            display: block;
+            margin: 0 auto;
+        }
+        .theme, .turn-info, .timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .player-list {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            text-align: right;
+        }
+        #game-input {
+            text-align: center;
+            font-size: 24px;
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bienvenue dans le jeu!</h1>
-        <p>Game Code: <%= gameCode %></p>
-        <div class="game-area" id="game-area"></div>
+        <div class="theme" id="theme"></div>
+        <div class="turn-info" id="turn-info"></div>
+        <div class="timer" id="timer"></div>
+        <div class="center">
+            <input type="text" id="game-input" placeholder="Votre texte ici...">
+        </div>
+        <div class="player-list" id="player-list"></div>
     </div>
 
     <script>
         const socket = new WebSocket('ws://localhost:3000');
         const gameCode = '<%= gameCode %>';
+        const username = sessionStorage.getItem('username');
+        let currentPlayer = '';
+        let turnEndTime = 0;
+        let timerInterval;
+
+        console.log(`Username: ${username}`);
 
         socket.addEventListener('open', function(event) {
             console.log('Connecté au serveur de jeu');
-            // Vous pouvez envoyer des messages spécifiques au jeu ici si nécessaire
+            socket.send(JSON.stringify({ type: 'request_game_users', gameCode: gameCode }));
         });
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
-            // Gérer les messages spécifiques au jeu ici
+            console.log('Message reçu:', msg);
+            if (msg.type === 'game_users') {
+                displayPlayers(msg.users);
+                document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
+            } else if (msg.type === 'turn_update') {
+                currentPlayer = msg.currentPlayer;
+                turnEndTime = msg.turnEndTime;
+                updateTurnInfo();
+                startTimer();
+            }
         });
 
         socket.addEventListener('close', function(event) {
@@ -32,8 +92,74 @@
         });
 
         socket.addEventListener('error', function(event) {
-            console.error('Error occurred:', event);
+            console.error('Erreur:', event);
         });
+
+        function displayPlayers(players) {
+            const container = document.querySelector('.container');
+            const playerList = document.getElementById('player-list');
+            const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
+            const radius = 150;
+            const angleStep = 2 * Math.PI / players.length;
+            const startAngle = Math.PI / 2; // Commence à partir du bas
+
+            playerList.innerHTML = '';
+            players.forEach((player, index) => {
+                const angle = startAngle + index * angleStep;
+                const x = center.x + radius * Math.cos(angle) - 25;
+                const y = center.y + radius * Math.sin(angle) - 25;
+
+                const avatar = document.createElement('img');
+                avatar.src = player.avatar;
+                avatar.classList.add('avatar');
+                avatar.style.left = `${x}px`;
+                avatar.style.top = `${y}px`;
+                container.appendChild(avatar);
+
+                const playerItem = document.createElement('div');
+                playerItem.innerText = `${player.username}`;
+                playerList.appendChild(playerItem);
+            });
+        }
+
+        function updateTurnInfo() {
+            document.getElementById('turn-info').innerText = `Au tour de ${currentPlayer} !`;
+            const input = document.getElementById('game-input');
+            input.placeholder = `C'est le tour de ${currentPlayer}`;
+            input.disabled = currentPlayer !== username;
+            console.log(`Current player: ${currentPlayer}, Username: ${username}, Input disabled: ${input.disabled}`);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const timeLeft = turnEndTime - Date.now();
+                const seconds = Math.floor(timeLeft / 1000);
+                const milliseconds = timeLeft % 1000;
+                document.getElementById('timer').innerText = `Temps restant: ${seconds}.${milliseconds}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 50);
+        }
+
+        document.getElementById('game-input').addEventListener('input', function(e) {
+            if (currentPlayer === username) {
+                socket.send(JSON.stringify({
+                    type: 'text_update',
+                    text: e.target.value,
+                    gameCode: gameCode
+                }));
+                console.log(`Text input sent: ${e.target.value}`);
+            } else {
+                console.log('Text input ignored, not your turn');
+            }
+        });
+
+        function updateTextInput(text) {
+            const input = document.getElementById('game-input');
+            input.value = text;
+        }
     </script>
 </body>
 </html>

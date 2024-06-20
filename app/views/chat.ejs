@@ -21,7 +21,8 @@
             </div>
         </div>
         <div class="yellow">
-            <div class="playerList" id="playerList"></div>
+            <div id="firstPlayer"></div>
+            <div id="otherPlayers" class="playerList"></div>
         </div>
     </div>
 
@@ -42,17 +43,35 @@
         }
 
         function updatePlayerList(users) {
-            const playerList = document.getElementById('playerList');
-            playerList.innerHTML = ''; // Clear the current list
-            users.forEach(user => {
-                const playerElement = document.createElement('div');
-                playerElement.classList.add('player');
-                playerElement.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="avatar"> ${user.username}`;
-                playerList.appendChild(playerElement);
-            });
+            const firstPlayer = document.getElementById('firstPlayer');
+            const otherPlayers = document.getElementById('otherPlayers');
+            firstPlayer.innerHTML = '';
+            otherPlayers.innerHTML = ''; // Clear the current list
+
+            if (users.length > 0) {
+                const firstUser = users[0];
+                const firstPlayerElement = document.createElement('div');
+                firstPlayerElement.classList.add('player');
+                firstPlayerElement.innerHTML = `
+                    <img src="${firstUser.avatar}" alt="Avatar">
+                    <div>${firstUser.username}</div>`;
+                firstPlayer.appendChild(firstPlayerElement);
+
+                const otherUsers = users.slice(1);
+                otherUsers.forEach(user => {
+                    const playerElement = document.createElement('div');
+                    playerElement.classList.add('player');
+                    playerElement.innerHTML = `
+                        <img src="${user.avatar}" alt="Avatar">
+                        <div>${user.username}</div>`;
+                    otherPlayers.appendChild(playerElement);
+                });
+            }
         }
 
-        function loadImages() {
+
+
+        function loadListImages() {
             fetch('/api/images')
                 .then(response => response.json())
                 .then(images => {
@@ -65,7 +84,7 @@
                         imgElement.addEventListener('click', () => {
                             socket.send(JSON.stringify({
                                 type: 'start_game',
-                                gameCode: image.Image.replace('.png', '') // Exemple d'utilisation d'un code de jeu
+                                theme: image.Image.replace('.png', '') 
                             }));
                         });
                         imageContainer.appendChild(imgElement);
@@ -74,7 +93,7 @@
                 .catch(error => console.error('Erreur lors du chargement des images:', error));
         }
 
-        document.addEventListener('DOMContentLoaded', loadImages);
+        document.addEventListener('DOMContentLoaded', loadListImages);
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);

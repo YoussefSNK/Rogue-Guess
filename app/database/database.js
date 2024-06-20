@@ -1,13 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Chemin vers la base de données
 const dbPath = path.resolve(__dirname, 'database.sqlite');
 
-// Créer/ouvrir la base de données
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Erreur lors de l\'ouverture de la base de données:', err.message);
+    console.error('Erreur lors de l\'ouverture de la base de données :', err.message);
   } else {
     console.log('Connecté à la base de données SQLite.');
     createTables();
@@ -15,12 +13,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 function createTables() {
-  const dropTablesQuery = `
+  const dropTablesQueryLogs = `
     DROP TABLE IF EXISTS Logs;
+  `;
+  const dropTablesQueryEntity = `
     DROP TABLE IF EXISTS Entity;
+  `;
+  const dropTablesQueryRequest = `
     DROP TABLE IF EXISTS Request;
   `;
-
   const createTableQueryLogs = `
     CREATE TABLE IF NOT EXISTS Logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +29,6 @@ function createTables() {
       Description TEXT NOT NULL
     );
   `;
-
   const createTableQueryEntity = `
     CREATE TABLE IF NOT EXISTS Entity (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,6 @@ function createTables() {
       Image TEXT NOT NULL
     );
   `;
-
   const createTableQueryRequest = `
     CREATE TABLE IF NOT EXISTS Request (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,39 +48,56 @@ function createTables() {
 
   db.serialize(() => {
     // Supprimer les tables existantes
-    db.run(dropTablesQuery, (err) => {
+    db.run(dropTablesQueryLogs, (err) => {
       if (err) {
-        console.error('Erreur lors de la suppression des tables:', err.message);
+        console.error('Erreur lors de la suppression des logs :', err.message);
       } else {
-        console.log('Tables supprimées avec succès.');
+        console.log('Tables Logs supprimée avec succès.');
+
+        db.run(dropTablesQueryEntity, (err) => {
+          if (err) {
+            console.error('Erreur lors de la suppression des entités :', err.message);
+          } else {
+            console.log('Table Entity supprimée avec succès.');
+
+            db.run(dropTablesQueryRequest, (err) => {
+              if (err) {
+                console.error('Erreur lors de la suppression des requêtes :', err.message);
+              } else {
+                console.log('Table Request supprimée avec succès.');
+
+                // Créer les tables
+                db.run(createTableQueryLogs, (err) => {
+                  if (err) {
+                    console.error('Erreur lors de la création de la table Logs :', err.message);
+                  } else {
+                    console.log('Table Logs créée avec succès.');
+
+                    db.run(createTableQueryEntity, (err) => {
+                      if (err) {
+                        console.error('Erreur lors de la création de la table Entity :', err.message);
+                      } else {
+                        console.log('Table Entity créée avec succès.');
+
+                        db.run(createTableQueryRequest, (err) => {
+                          if (err) {
+                            console.error('Erreur lors de la création de la table Request :', err.message);
+                          } else {
+                            console.log('Table Request créée avec succès.');
+
+                            // Insérer les données initiales
+                            insertInitialData();
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
       }
-
-      // Créer les nouvelles tables après avoir supprimé les anciennes
-      db.run(createTableQueryLogs, (err) => {
-        if (err) {
-          console.error('Erreur lors de la création de la table Logs:', err.message);
-        } else {
-          console.log('Table Logs créée avec succès.');
-        }
-      });
-
-      db.run(createTableQueryEntity, (err) => {
-        if (err) {
-          console.error('Erreur lors de la création de la table Entity:', err.message);
-        } else {
-          console.log('Table Entity créée avec succès.');
-        }
-      });
-
-      db.run(createTableQueryRequest, (err) => {
-        if (err) {
-          console.error('Erreur lors de la création de la table Request:', err.message);
-        } else {
-          console.log('Table Request créée avec succès.');
-          // Insérer les données initiales après la création des tables
-          insertInitialData();
-        }
-      });
     });
   });
 }
@@ -170,28 +186,30 @@ function insertInitialData() {
     ("azrkadzd", "aozdjiazjdoia", "inazuma.png");
   `;
 
-  db.run(insertQueryLogs, (err) => {
-    if (err) {
-      console.error('Erreur lors de l\'insertion des données initiales dans Logs:', err.message);
-    } else {
-      console.log('Données des Logs insérées avec succès.');
-    }
-  });
+  db.serialize(() => {
+    db.run(insertQueryLogs, (err) => {
+      if (err) {
+        console.error('Erreur lors de l\'insertion des données initiales dans Logs :', err.message);
+      } else {
+        console.log('Données des Logs insérées avec succès.');
+      }
+    });
 
-  db.run(insertQueryEntity, (err) => {
-    if (err) {
-      console.error('Erreur lors de l\'insertion des données initiales dans Entity:', err.message);
-    } else {
-      console.log('Données des Entity insérées avec succès.');
-    }
-  });
+    db.run(insertQueryEntity, (err) => {
+      if (err) {
+        console.error('Erreur lors de l\'insertion des données initiales dans Entity :', err.message);
+      } else {
+        console.log('Données des Entity insérées avec succès.');
+      }
+    });
 
-  db.run(insertQueryRequest, (err) => {
-    if (err) {
-      console.error('Erreur lors de l\'insertion des données initiales dans Request:', err.message);
-    } else {
-      console.log('Données des Request insérées avec succès.');
-    }
+    db.run(insertQueryRequest, (err) => {
+      if (err) {
+        console.error('Erreur lors de l\'insertion des données initiales dans Request :', err.message);
+      } else {
+        console.log('Données des Request insérées avec succès.');
+      }
+    });
   });
 }
 
