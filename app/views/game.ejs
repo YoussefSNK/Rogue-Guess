@@ -67,6 +67,7 @@
         let turnEndTime = 0;
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
+        let playerList = [];
     
         console.log(`Username: ${username}`);
     
@@ -91,12 +92,8 @@
             console.log('Déconnecté du serveur de jeu');
         });
     
-        socket.addEventListener('error', function(event) {
-            console.error('Erreur:', event);
-        });
-    
         document.getElementById('theme').addEventListener('click', function() {
-            animateRotation(Math.PI);
+            animateRotation(Math.PI/2); // Rotation de 90 degrés
         });
     
         document.getElementById('game-input').addEventListener('input', function(e) {
@@ -108,7 +105,7 @@
                 }));
                 console.log(`Text input sent: ${e.target.value}`);
             } else {
-                console.log('Text input ignored, not your turn');
+                console.log('Text input ignored, not your turn but ', currentPlayer, 's turn');
             }
         });
     
@@ -129,7 +126,6 @@
                     requestAnimationFrame(stepAnimation); // Continuer l'animation tant que ce n'est pas terminé
                 }
             }
-    
             requestAnimationFrame(stepAnimation); // Démarrer l'animation
         }
     
@@ -163,5 +159,6 @@
             });
         }
     </script>
+    
 </body>
 </html>

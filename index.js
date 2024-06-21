@@ -53,7 +53,6 @@ wss.on('connection', (ws) => {
                 if (!user) {
                     user = { username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid, ws: ws };
                     users.push(user);
-                    console.log(users);
                 } else {
                     user.ws = ws; // Mettre à jour la référence WebSocket
                 }
