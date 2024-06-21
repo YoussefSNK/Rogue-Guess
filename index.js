@@ -69,7 +69,7 @@ wss.on('connection', (ws) => {
                 const gameCode = generateGameCode();
                 rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aitor Cazador", "Xavier Foster"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
                 broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
-                users = []; // Vider la liste des utilisateurs après les avoir déplacés dans une salle
+                users = [];
                 startTurn(gameCode);
                 break;
             case 'request_game_users':
@@ -77,7 +77,9 @@ wss.on('connection', (ws) => {
                 const room = rooms[roomCode] || { users: [], theme: '' };
                 ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar })), theme: room.theme }));
                 break;
+
             
+
             default:
                 break;
         }
