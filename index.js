@@ -47,7 +47,7 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
 
-        switch(data.type.trim()) {
+        switch (data.type.trim()) {
             case 'user_info':
                 let user = users.find(user => user.uuid === data.userInfo.uuid);
                 if (!user) {
@@ -77,17 +77,28 @@ wss.on('connection', (ws) => {
                 const room = rooms[roomCode] || { users: [], theme: '' };
                 ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar })), theme: room.theme }));
                 break;
+            case 'text_update':
+                console.log(data)
+                console.log("On entre dans text_update côté serveur");
 
-            
-
+                broadcast(JSON.stringify({ type: 'text_update', text: data.text, username: data.username, gameCode: data.gameCode }));
+                break
             default:
                 break;
         }
     });
 
     ws.on('close', () => {
+        users = users.filter(user => user.ws !== ws);
+        broadcastUsers();
     });
 });
+
+
+wss.on('error', (error) => {
+    console.error('Erreur WebSocket Server:', error);
+});
+
 
 // Fonction de diffusion des messages à tous les clients WebSocket connectés
 function broadcast(message) {
@@ -98,11 +109,27 @@ function broadcast(message) {
     });
 }
 
-// Fonction de diffusion des utilisateurs connectés à tous les clients WebSocket
+// Diffuse tous les users
 function broadcastUsers() {
     const userListMessage = JSON.stringify({ type: 'user_list', users: users });
     broadcast(userListMessage);
 }
+
+function broadcastToRoom(roomCode, message) {
+    const room = rooms[roomCode];
+    if (room) {
+        room.users.forEach(user => {
+            if (user.ws.readyState === WebSocket.OPEN) {
+                try {
+                    user.ws.send(message);
+                } catch (error) {
+                }
+            }
+        });
+    } else {
+    }
+}
+
 
 // Fonction pour démarrer le tour de jeu
 function startTurn(gameCode) {
@@ -121,14 +148,7 @@ function startTurn(gameCode) {
     setTimeout(() => startTurn(gameCode), 5000);
 }
 
-function broadcastToRoom(gameCode, message) {
-    const roomUsers = rooms[gameCode]?.users || [];
-    roomUsers.forEach(user => {
-        if (user.ws && user.ws.readyState === WebSocket.OPEN) {
-            user.ws.send(message);
-        }
-    });
-}
+
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);

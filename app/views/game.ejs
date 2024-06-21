@@ -25,87 +25,128 @@
         const username = sessionStorage.getItem('username');
         const uuid = sessionStorage.getItem('uuid');
         let currentPlayer = '';
-        let turnEndTime = 0;
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
-        let deadPlayers = [];
-    
+
+        console.log('Game code:', gameCode);
+        console.log('Username:', username);
+
         socket.addEventListener('open', function(event) {
             console.log('Connecté au serveur de jeu');
             socket.send(JSON.stringify({ type: 'request_game_users', gameCode: gameCode }));
         });
-    
+
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
-            if (msg.type === 'game_users') {
-                displayPlayers(msg.users);
-                currentPlayers = msg.users;
-                document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
-                currentPlayer = currentPlayers[0].username;
-                turnEndTime = 5000;
+            console.log('Message reçu:', msg);
 
-            } else if (msg.type === 'turn_update') {
-                currentPlayer = msg.currentPlayer;
-                turnEndTime = msg.turnEndTime;
-            }});
-    
+            switch(msg.type) {
+                case 'game_users':
+                    displayPlayers(msg.users);
+                    currentPlayers = msg.users;
+                    document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
+                    currentPlayer = currentPlayers[0].username;
+                    turnEndTime = 5000;
+                    document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                    break;
+                case 'turn_update':
+                    currentPlayer = msg.currentPlayer;
+                    turnEndTime = msg.turnEndTime;
+                    document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                    break;
+                case 'text_update':
+                    if ((msg.username !== username) && (msg.gameCode == gameCode)) {
+                        console.log("On a reçu le texte ", msg.text);
+                        updateTextInput(msg.text);
+                    }
+                    break;
+                default:
+                    console.log('Type de message non pris en charge:', msg.type);
+                    break;
+            }
+        });
+
         socket.addEventListener('close', function(event) {
-            console.log('Déconnecté du serveur de jeu');});
-    
+            console.log('Déconnecté du serveur de jeu');
+        });
+
+        socket.addEventListener('error', function(event) {
+            console.error('Erreur WebSocket:', event);
+        });
+
         document.getElementById('theme').addEventListener('click', function() {
-            animateRotation(Math.PI * 2 / currentPlayers.length);});
-    
-    
+            animateRotation(Math.PI * 2 / currentPlayers.length);
+        });
+
+        document.getElementById('game-input').addEventListener('input', function(e) {
+            console.log('Input event detected');
+            if (currentPlayer === username) {
+                console.log('Sending text update:', e.target.value);
+                socket.send(JSON.stringify({
+                    type: 'text_update',
+                    text: e.target.value,
+                    gameCode: gameCode,
+                    username: username
+                }));
+            } else {
+                console.log('Text input ignored, not your turn');
+            }
+        });
+
         function animateRotation(rotationAngle) {
             const startAngle = angleOffset;
             const targetAngle = angleOffset + rotationAngle;
             const duration = 250;
             const startTime = performance.now();
-    
+
             function stepAnimation(timestamp) {
                 const elapsed = timestamp - startTime;
                 const progress = Math.min(elapsed / duration, 1); // Calculer le progrès de l'animation de 0 à 1
                 angleOffset = startAngle + progress * (targetAngle - startAngle); // Interpolation linéaire
-    
+
                 displayPlayers(currentPlayers); // Mettre à jour l'affichage avec la nouvelle rotation
-    
+
                 if (progress < 1) {
                     requestAnimationFrame(stepAnimation); // Continuer l'animation tant que ce n'est pas terminé
                 }
             }
+
             requestAnimationFrame(stepAnimation); // Démarrer l'animation
         }
-    
+
         function displayPlayers(players) {
             currentPlayers = players; // Mettre à jour les joueurs actuels
             const container = document.querySelector('.container');
             const playerList = document.getElementById('player-list');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
-            const radius = 300;
+            const radius = 150;
             const angleStep = 2 * Math.PI / players.length;
             const startAngle = Math.PI / 2; // Commence à partir du bas
-    
+
             playerList.innerHTML = '';
             container.querySelectorAll('.avatar').forEach(avatar => avatar.remove()); // Supprimer les anciens avatars
-    
+
             players.forEach((player, index) => {
                 const angle = startAngle + index * angleStep + angleOffset;
                 const x = center.x + radius * Math.cos(angle) - 25;
                 const y = center.y + radius * Math.sin(angle) - 25;
-    
+
                 const avatar = document.createElement('img');
                 avatar.src = player.avatar;
                 avatar.classList.add('avatar');
                 avatar.style.left = `${x}px`;
                 avatar.style.top = `${y}px`;
                 container.appendChild(avatar);
-    
+
                 const playerItem = document.createElement('div');
                 playerItem.innerText = `${player.username}`;
                 playerList.appendChild(playerItem);
             });
         }
+
+        function updateTextInput(text) {
+            document.getElementById('game-input').value = text;
+        }
     </script>
-    
 </body>
 </html>
