@@ -67,7 +67,7 @@ wss.on('connection', (ws) => {
                 break;
             case 'start_game':
                 const gameCode = generateGameCode();
-                rooms[gameCode] = { users: users.slice(), theme: data.theme, currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
+                rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aitor Cazador", "Xavier Foster"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
                 broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
                 users = []; // Vider la liste des utilisateurs après les avoir déplacés dans une salle
                 startTurn(gameCode);

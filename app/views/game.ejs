@@ -15,8 +15,8 @@
             flex-direction: column;
         }
         .avatar {
-            width: 50px;
-            height: 50px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             position: absolute;
             transition: transform 1s ease; /* Pour une rotation douce */
@@ -67,7 +67,6 @@
         let turnEndTime = 0;
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
-        let playerList = [];
         let deadPlayers = [];
     
         console.log(`Username: ${username}`);
@@ -81,8 +80,11 @@
             const msg = JSON.parse(event.data);
             if (msg.type === 'game_users') {
                 displayPlayers(msg.users);
-                playerList = msg.users;
+                currentPlayers = msg.users;
                 document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
+                currentPlayer = currentPlayers[0].username;
+                turnEndTime = 5000;
+
             } else if (msg.type === 'turn_update') {
                 currentPlayer = msg.currentPlayer;
                 turnEndTime = msg.turnEndTime;
@@ -94,7 +96,7 @@
         });
     
         document.getElementById('theme').addEventListener('click', function() {
-            animateRotation(Math.PI * 2 / playerList.length); // Rotation de 90 degrés
+            animateRotation(Math.PI * 2 / currentPlayers.length); // Rotation de 90 degrés
         });
     
         document.getElementById('game-input').addEventListener('input', function(e) {
@@ -135,7 +137,7 @@
             const container = document.querySelector('.container');
             const playerList = document.getElementById('player-list');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
-            const radius = 150;
+            const radius = 300;
             const angleStep = 2 * Math.PI / players.length;
             const startAngle = Math.PI / 2; // Commence à partir du bas
     
