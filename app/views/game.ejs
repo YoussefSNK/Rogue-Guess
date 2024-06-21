@@ -68,6 +68,7 @@
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
         let playerList = [];
+        let deadPlayers = [];
     
         console.log(`Username: ${username}`);
     
@@ -78,9 +79,9 @@
     
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
-            console.log('Message reçu:', msg);
             if (msg.type === 'game_users') {
                 displayPlayers(msg.users);
+                playerList = msg.users;
                 document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
             } else if (msg.type === 'turn_update') {
                 currentPlayer = msg.currentPlayer;
@@ -93,7 +94,7 @@
         });
     
         document.getElementById('theme').addEventListener('click', function() {
-            animateRotation(Math.PI/2); // Rotation de 90 degrés
+            animateRotation(Math.PI * 2 / playerList.length); // Rotation de 90 degrés
         });
     
         document.getElementById('game-input').addEventListener('input', function(e) {
