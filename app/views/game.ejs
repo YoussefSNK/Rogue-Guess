@@ -70,9 +70,6 @@
             console.log('Déconnecté du serveur de jeu');
         });
 
-        socket.addEventListener('error', function(event) {
-            console.error('Erreur WebSocket:', event);
-        });
 
         document.getElementById('theme').addEventListener('click', function() {
             animateRotation(Math.PI * 2 / currentPlayers.length);
