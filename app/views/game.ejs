@@ -93,6 +93,10 @@
             }
         });
 
+        function updateTextInput(text) {
+            document.getElementById('game-input').value = text;
+        }
+
         function animateRotation(rotationAngle) {
             const startAngle = angleOffset;
             const targetAngle = angleOffset + rotationAngle;
@@ -110,7 +114,6 @@
                     requestAnimationFrame(stepAnimation); // Continuer l'animation tant que ce n'est pas terminé
                 }
             }
-
             requestAnimationFrame(stepAnimation); // Démarrer l'animation
         }
 
@@ -119,7 +122,7 @@
             const container = document.querySelector('.container');
             const playerList = document.getElementById('player-list');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
-            const radius = 150;
+            const radius = 300;
             const angleStep = 2 * Math.PI / players.length;
             const startAngle = Math.PI / 2; // Commence à partir du bas
 
@@ -144,9 +147,7 @@
             });
         }
 
-        function updateTextInput(text) {
-            document.getElementById('game-input').value = text;
-        }
+
     </script>
 </body>
 </html>
