@@ -12,6 +12,8 @@ const wss = new WebSocket.Server({ server });
 
 const port = process.env.PORT || 3000;
 
+const db = require('./app/database/database');
+
 // Configurer le moteur de vue
 app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
@@ -70,7 +72,6 @@ wss.on('connection', (ws) => {
                 rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "Aurelion Sol"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
                 broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
                 users = [];
-                startTurn(gameCode);
                 break;
             case 'request_game_users':
                 const roomCode = data.gameCode;
@@ -156,22 +157,7 @@ function broadcastToRoom(roomCode, message) {
     } else {
     }
 }
-// à revoir - Fonction pour démarrer le tour de jeu
-function startTurn(gameCode) {
-    const room = rooms[gameCode];
-    if (!room) return;
 
-    // room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.users.length;
-    room.turnEndTime = Date.now() + 5000;
-
-    broadcastToRoom(gameCode, JSON.stringify({
-        type: 'turn_update',
-        currentPlayer: room.users[room.currentPlayerIndex].username,
-        turnEndTime: room.turnEndTime
-    }));
-
-    setTimeout(() => startTurn(gameCode), 5000);
-}
 
 
 
