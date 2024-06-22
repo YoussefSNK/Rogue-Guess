@@ -9,6 +9,7 @@
     
 </head>
 <body>
+    <div id="background"></div>
     <div class="container">
         <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
@@ -52,9 +53,8 @@
                     break;
                 case 'turn_success':
                     if (msg.gameCode === gameCode) {
-                        console.log('Mise à jour du tour reçue:', msg);
+                        addBackgroundImage(msg.text);  // Ajout de l'image de fond
                         currentPlayer = msg.currentPlayer;
-                        console.log(`Nouveau joueur: ${currentPlayer}`);
                         document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
                         toggleInput(currentPlayer === username);
                         animateRotation(Math.PI * 2 / currentPlayers.length);
@@ -112,6 +112,13 @@
 
         function toggleInput(enable) {
             document.getElementById('game-input').disabled = !enable;
+        }
+
+        function addBackgroundImage(text) {
+            const img = document.createElement('img');
+            img.src = `/images/entity/${text}.png`;
+            img.classList.add('background-image');
+            document.getElementById('background').appendChild(img);
         }
 
         function animateRotation(rotationAngle) {

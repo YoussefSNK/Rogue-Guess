@@ -67,7 +67,7 @@ wss.on('connection', (ws) => {
                 break;
             case 'start_game':
                 const gameCode = generateGameCode();
-                rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aitor Cazador", "Xavier Foster"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
+                rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "Aurelion Sol"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
                 broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
                 users = [];
                 startTurn(gameCode);
@@ -86,8 +86,9 @@ wss.on('connection', (ws) => {
 
                     currentRoom.list.forEach((entity, index) => {
                         if (entity == data.text){
+                            
                             currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
-
+                            
                             //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
                             currentRoom.currentPlayerIndex += 1
                             if (currentRoom.currentPlayerIndex == currentRoom.users.length){
