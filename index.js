@@ -83,20 +83,28 @@ wss.on('connection', (ws) => {
             case 'send_answer':
                 const currentRoom = rooms[data.gameCode];
                 if (currentRoom) {
-                    //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
-                    currentRoom.currentPlayerIndex += 1
-                    if (currentRoom.currentPlayerIndex == currentRoom.users.length){
-                        currentRoom.currentPlayerIndex = 0
-                    }            
-                    currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
-                    const turnUpdateMessage = JSON.stringify({
-                        type: 'turn_update',
-                        text: data.text,
-                        currentPlayer: currentRoom.currentPlayer,
-                        gameCode: data.gameCode,
+
+                    currentRoom.list.forEach((entity, index) => {
+                        if (entity == data.text){
+                            currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
+
+                            //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+                            currentRoom.currentPlayerIndex += 1
+                            if (currentRoom.currentPlayerIndex == currentRoom.users.length){
+                                currentRoom.currentPlayerIndex = 0
+                            }            
+                            currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
+                            const turnUpdateMessage = JSON.stringify({
+                                type: 'turn_update',
+                                text: data.text,
+                                currentPlayer: currentRoom.currentPlayer,
+                                gameCode: data.gameCode,
+                            });
+                            broadcast(turnUpdateMessage);
+                        }
                     });
-            
-                    broadcast(turnUpdateMessage);
+
+
                 } else {
                     console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
                 }
