@@ -120,25 +120,47 @@ body {
 .red {
     grid-column: 1 / 4;
     grid-row: 1 / 3;
-    background-color: #e74c3c;
+    background-color: #34495e;
     padding: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 90%;
-    height: 90%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Utilise auto-fill pour remplir l'espace */
+    gap: 20px; /* Espacement entre les éléments */
+    justify-items: center; /* Centre les éléments horizontalement */
+    align-items: flex-start; /* Aligne les éléments en haut */
+    border-radius: 15px; /* Arrondit les coins de la grille */
 }
 
-.red img {
+.red .image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
+    background-color: #979797;
+    border-radius: 10px; /* Arrondit les coins de chaque carte */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%; /* Force la carte à remplir l'espace disponible */
+}
+
+.red .image-container img {
     max-width: 100px;
     max-height: 100px;
-    margin: 10px;
     border-radius: 8px;
     transition: transform 0.2s ease-in-out;
 }
 
-.red img:hover {
+.red .image-container img:hover {
     transform: scale(1.1);
+}
+
+.red .image-container h3 {
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+    width: 100%; /* Limite la largeur du titre */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Empêche le débordement de texte */
 }
 
 
