@@ -53,6 +53,7 @@
                     break;
                 case 'turn_success':
                     if (msg.gameCode === gameCode) {
+                        updateTextInput("");
                         addBackgroundImage(msg.text);  // Ajout de l'image de fond
                         currentPlayer = msg.currentPlayer;
                         document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;

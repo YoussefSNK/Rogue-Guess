@@ -1,4 +1,5 @@
 const Log = require('../models/logModel');
+const db = require('../database/database');
 
 // Créer un nouveau log
 exports.createLog = (req, res) => {
@@ -32,3 +33,34 @@ exports.getRequests = (req, res) => {
     }
   });
 };
+
+
+exports.getEntitiesBySQLRequest = (sqlRequest, callback) => {
+  db.all(sqlRequest[0], (err, rows) => {
+      if (err) {
+          console.error('Erreur lors de la récupération des entités par requête SQL:', err);
+          callback(err, null);
+      } else {
+          const entities = rows.map(row => row.Name);
+          console.log('Entités récupérées pour la requête SQL:', entities);
+          callback(null, entities);
+      }
+  });
+};
+
+exports.getSQLByTheme = (theme, callback) => {
+  const query = "SELECT SQL_Request FROM Request WHERE Image = ?";
+  db.all(query, [theme], (err, rows) => {
+      if (err) {
+          console.error('Erreur lors de la récupération de la requête SQL par thème:', err);
+          callback(err, null);
+      } else {
+          // Vous devez mapper les résultats sur la colonne SQL_Request
+          const sqlRequests = rows.map(row => row.SQL_Request);
+          console.log('Requêtes SQL récupérées pour le thème', theme, ':', sqlRequests);
+          callback(null, sqlRequests);
+      }
+  });
+};
+
+

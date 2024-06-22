@@ -13,6 +13,13 @@ const wss = new WebSocket.Server({ server });
 const port = process.env.PORT || 3000;
 
 const db = require('./app/database/database');
+const logController = require('./app/controllers/logController');
+
+process.on('uncaughtException', (err) => {
+    console.error('Erreur non capturée :', err);
+    process.exit(1); // Exit le processus avec un code d'erreur
+});
+
 
 // Configurer le moteur de vue
 app.set('views', path.join(__dirname, 'app', 'views'));
@@ -68,10 +75,38 @@ wss.on('connection', (ws) => {
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
+                const theme = data.theme + ".png";
                 const gameCode = generateGameCode();
-                rooms[gameCode] = { users: users.slice(), theme: data.theme, list: ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "Aurelion Sol"], currentPlayerIndex: 0, turnEndTime: Date.now() + 5000 };
-                broadcastToRoom(gameCode, JSON.stringify({ type: 'redirect_game', gameCode: gameCode, theme: data.theme, users: users }));
-                users = [];
+
+                console.log("Themeo = ", theme)
+                logController.getSQLByTheme(theme, (err, sqlrequest) => {
+                    if (err){
+                        console.error('Erreur lors de la récupération des entités:', err);
+                        return;
+                    }
+                    logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
+                        if (err) {
+                            console.error('Erreur lors de la récupération des entités:', err);
+                            return;
+                        }
+                        rooms[gameCode] = {
+                            users: users.slice(),
+                            theme: theme,
+                            list: entities,
+                            currentPlayerIndex: 0,
+                            turnEndTime: Date.now() + 5000
+                        };
+                        broadcastToRoom(gameCode, JSON.stringify({
+                            type: 'redirect_game',
+                            gameCode: gameCode,
+                            theme: theme,
+                            users: users
+                        }));
+
+                        users = [];
+                    });
+                })
+
                 break;
             case 'request_game_users':
                 const roomCode = data.gameCode;
@@ -86,15 +121,13 @@ wss.on('connection', (ws) => {
                 if (currentRoom) {
 
                     currentRoom.list.forEach((entity, index) => {
+                        
                         if (entity == data.text){
                             
                             currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
                             
-                            //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
-                            currentRoom.currentPlayerIndex += 1
-                            if (currentRoom.currentPlayerIndex == currentRoom.users.length){
-                                currentRoom.currentPlayerIndex = 0
-                            }            
+                            currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+      
                             currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
                             const turnUpdateMessage = JSON.stringify({
                                 type: 'turn_success',
@@ -105,8 +138,6 @@ wss.on('connection', (ws) => {
                             broadcast(turnUpdateMessage);
                         }
                     });
-
-
                 } else {
                     console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
                 }
@@ -122,10 +153,17 @@ wss.on('connection', (ws) => {
     });
 });
 
-
 wss.on('error', (error) => {
     console.error('Erreur WebSocket Server:', error);
 });
+
+
+function check_victory(roomCode){
+    const room = rooms[roomCode];
+    if (room.users.length == 1){
+        console.log("GAGNEEEE")
+    }
+}
 
 
 // Fonction de diffusion des messages à tous les clients WebSocket connectés

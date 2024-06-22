@@ -26,4 +26,38 @@ router.get('/images', (req, res) => {
     });
   });
 
+
+
+router.get('/entities/:theme', (req, res) => {
+  const theme = req.params.theme;
+  const query = 'SELECT Name FROM Entity WHERE Licence = ?';
+  
+  db.all(query, [theme], (err, rows) => {
+      if (err) {
+          console.error('Erreur lors de la récupération des entités:', err.message);
+          res.status(500).json({ error: 'Erreur lors de la récupération des entités' });
+      } else {
+          res.json(rows.map(row => row.Name));
+      }
+  });
+});
+
+
+router.get('/sqlrequest/:theme', (req, res) => {
+  const theme = req.params.theme;
+  const query = 'SELECT SQL_Request FROM Request WHERE Image = ?';
+  
+  db.all(query, [theme], (err, rows) => {
+      if (err) {
+          console.error('Erreur de con:', err.message);
+          res.status(500).json({ error: 'Erreur de con 2' });
+      } else {
+          res.json(rows.map(row => row.Name));
+      }
+  });
+});
+
+
+
+
 module.exports = router;
