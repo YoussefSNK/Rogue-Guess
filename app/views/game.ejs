@@ -50,7 +50,7 @@
                     document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
                     toggleInput(currentPlayer === username);
                     break;
-                case 'turn_update':
+                case 'turn_success':
                     if (msg.gameCode === gameCode) {
                         console.log('Mise à jour du tour reçue:', msg);
                         currentPlayer = msg.currentPlayer;

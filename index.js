@@ -95,7 +95,7 @@ wss.on('connection', (ws) => {
                             }            
                             currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
                             const turnUpdateMessage = JSON.stringify({
-                                type: 'turn_update',
+                                type: 'turn_success',
                                 text: data.text,
                                 currentPlayer: currentRoom.currentPlayer,
                                 gameCode: data.gameCode,
