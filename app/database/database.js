@@ -183,7 +183,7 @@ function insertInitialData() {
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Tous les personnages d'Inazuma Eleven", "SELECT * FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
     ("Tous les champions de League of legends", "SELECT * FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
-    ("azrkadzd", "aozdjiazjdoia", "inazuma.png");
+    ("azrkadzd", "aozdjiazjdoia", "random.png");
   `;
 
   db.serialize(() => {

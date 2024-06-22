@@ -141,7 +141,7 @@ function broadcastUsers() {
     const userListMessage = JSON.stringify({ type: 'user_list', users: users });
     broadcast(userListMessage);
 }
-
+// à revoir
 function broadcastToRoom(roomCode, message) {
     const room = rooms[roomCode];
     if (room) {
@@ -156,9 +156,7 @@ function broadcastToRoom(roomCode, message) {
     } else {
     }
 }
-
-
-// Fonction pour démarrer le tour de jeu
+// à revoir - Fonction pour démarrer le tour de jeu
 function startTurn(gameCode) {
     const room = rooms[gameCode];
     if (!room) return;
