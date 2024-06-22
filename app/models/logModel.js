@@ -17,7 +17,7 @@ exports.getLogs = (callback) => {
 };
 
 exports.getRequests = (callback) => {
-  const query = 'SELECT * FROM Request';
+  const query = 'SELECT Title, Image FROM Request';
   db.all(query, [], (err, rows) => {
     callback(err, rows);
   });
