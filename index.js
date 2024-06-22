@@ -81,27 +81,14 @@ wss.on('connection', (ws) => {
                 broadcast(JSON.stringify({ type: 'text_update', text: data.text, username: data.username, gameCode: data.gameCode }));
                 break;
             case 'send_answer':
-                console.log(`[DEBUT DE LA SOCKET]\n`);
                 const currentRoom = rooms[data.gameCode];
                 if (currentRoom) {
-                    console.log(`De la part de: ${data.username}`);
-                    console.log(`currentPlayerIndex est actuellement = ${currentRoom.currentPlayerIndex}, nombre de joueurs = ${currentRoom.users.length}`);
-            
-                    currentRoom.users.forEach((user, index) => {
-                        console.log(`Utilisateur ${index + 1}: ${user.username}`);
-                    });
-            
                     //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
                     currentRoom.currentPlayerIndex += 1
                     if (currentRoom.currentPlayerIndex == currentRoom.users.length){
                         currentRoom.currentPlayerIndex = 0
-                    }
-                    console.log(`Après mise à jour: currentPlayerIndex = ${currentRoom.currentPlayerIndex}`);
-            
-                    currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;
-            
-                    console.log(`Prochain joueur: ${currentRoom.currentPlayer}`);
-            
+                    }            
+                    currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
                     const turnUpdateMessage = JSON.stringify({
                         type: 'turn_update',
                         text: data.text,
@@ -110,12 +97,6 @@ wss.on('connection', (ws) => {
                     });
             
                     broadcast(turnUpdateMessage);
-            
-                    // Afficher les utilisateurs de la salle après la mise à jour
-                    currentRoom.users.forEach((user, index) => {
-                        console.log(`Utilisateur ${index + 1} maintenant: ${user.username}`);
-                    });
-                    console.log(`[FIN DE LA SOCKET]`)
                 } else {
                     console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
                 }
