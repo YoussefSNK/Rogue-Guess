@@ -78,11 +78,48 @@ wss.on('connection', (ws) => {
                 ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar })), theme: room.theme }));
                 break;
             case 'text_update':
-                console.log(data)
-                console.log("On entre dans text_update côté serveur");
-
                 broadcast(JSON.stringify({ type: 'text_update', text: data.text, username: data.username, gameCode: data.gameCode }));
-                break
+                break;
+            case 'send_answer':
+                console.log(`[DEBUT DE LA SOCKET]\n`);
+                const currentRoom = rooms[data.gameCode];
+                if (currentRoom) {
+                    console.log(`De la part de: ${data.username}`);
+                    console.log(`currentPlayerIndex est actuellement = ${currentRoom.currentPlayerIndex}, nombre de joueurs = ${currentRoom.users.length}`);
+            
+                    currentRoom.users.forEach((user, index) => {
+                        console.log(`Utilisateur ${index + 1}: ${user.username}`);
+                    });
+            
+                    //currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+                    currentRoom.currentPlayerIndex += 1
+                    if (currentRoom.currentPlayerIndex == currentRoom.users.length){
+                        currentRoom.currentPlayerIndex = 0
+                    }
+                    console.log(`Après mise à jour: currentPlayerIndex = ${currentRoom.currentPlayerIndex}`);
+            
+                    currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;
+            
+                    console.log(`Prochain joueur: ${currentRoom.currentPlayer}`);
+            
+                    const turnUpdateMessage = JSON.stringify({
+                        type: 'turn_update',
+                        text: data.text,
+                        currentPlayer: currentRoom.currentPlayer,
+                        gameCode: data.gameCode,
+                    });
+            
+                    broadcast(turnUpdateMessage);
+            
+                    // Afficher les utilisateurs de la salle après la mise à jour
+                    currentRoom.users.forEach((user, index) => {
+                        console.log(`Utilisateur ${index + 1} maintenant: ${user.username}`);
+                    });
+                    console.log(`[FIN DE LA SOCKET]`)
+                } else {
+                    console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
+                }
+                break;
             default:
                 break;
         }
@@ -136,7 +173,7 @@ function startTurn(gameCode) {
     const room = rooms[gameCode];
     if (!room) return;
 
-    room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.users.length;
+    // room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.users.length;
     room.turnEndTime = Date.now() + 5000;
 
     broadcastToRoom(gameCode, JSON.stringify({

@@ -48,15 +48,20 @@
                     currentPlayer = currentPlayers[0].username;
                     turnEndTime = 5000;
                     document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                    toggleInput(currentPlayer === username);
                     break;
                 case 'turn_update':
-                    currentPlayer = msg.currentPlayer;
-                    turnEndTime = msg.turnEndTime;
-                    document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                    if (msg.gameCode === gameCode) {
+                        console.log('Mise à jour du tour reçue:', msg);
+                        currentPlayer = msg.currentPlayer;
+                        console.log(`Nouveau joueur: ${currentPlayer}`);
+                        document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                        toggleInput(currentPlayer === username);
+                        animateRotation(Math.PI * 2 / currentPlayers.length);
+                    }
                     break;
                 case 'text_update':
                     if ((msg.username !== username) && (msg.gameCode == gameCode)) {
-                        console.log("On a reçu le texte ", msg.text);
                         updateTextInput(msg.text);
                     }
                     break;
@@ -68,11 +73,6 @@
 
         socket.addEventListener('close', function(event) {
             console.log('Déconnecté du serveur de jeu');
-        });
-
-
-        document.getElementById('theme').addEventListener('click', function() {
-            animateRotation(Math.PI * 2 / currentPlayers.length);
         });
 
         document.getElementById('game-input').addEventListener('input', function(e) {
@@ -90,8 +90,28 @@
             }
         });
 
+        document.getElementById('game-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                console.log('Enter key pressed');
+                if (currentPlayer === username) {
+                    socket.send(JSON.stringify({
+                        type: 'send_answer',
+                        gameCode: gameCode,
+                        username: username,
+                        text: document.getElementById('game-input').value 
+                    }));
+                } else {
+                    console.log('Enter key press ignored, not your turn');
+                }
+            }
+        });
+
         function updateTextInput(text) {
             document.getElementById('game-input').value = text;
+        }
+
+        function toggleInput(enable) {
+            document.getElementById('game-input').disabled = !enable;
         }
 
         function animateRotation(rotationAngle) {
