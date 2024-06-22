@@ -70,13 +70,16 @@
         }
 
 
-
         function loadListImages() {
-            fetch('/api/images')
+            fetch('/api/requests')
                 .then(response => response.json())
                 .then(images => {
                     const imageContainer = document.getElementById('image-container');
+                    imageContainer.innerHTML = ''; // Clear the container before adding new images
                     images.forEach(image => {
+                        const titleElement = document.createElement('h3');
+                        titleElement.innerText = image.Title; // Add the title text
+
                         const imgElement = document.createElement('img');
                         imgElement.src = "images/list_icons/" + image.Image;
                         imgElement.alt = "Request Image";
@@ -84,14 +87,20 @@
                         imgElement.addEventListener('click', () => {
                             socket.send(JSON.stringify({
                                 type: 'start_game',
-                                theme: image.Image.replace('.png', '') 
+                                theme: image.Image.replace('.png', '')
                             }));
                         });
-                        imageContainer.appendChild(imgElement);
+
+                        const container = document.createElement('div');
+                        container.classList.add('image-container');
+                        container.appendChild(titleElement);
+                        container.appendChild(imgElement);
+                        imageContainer.appendChild(container);
                     });
                 })
-                .catch(error => console.error('Erreur lors du chargement des images:', error));
+            .catch(error => console.error('Erreur lors du chargement des images:', error));
         }
+
 
         document.addEventListener('DOMContentLoaded', loadListImages);
 
