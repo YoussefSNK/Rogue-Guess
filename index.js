@@ -122,19 +122,34 @@ wss.on('connection', (ws) => {
                     currentRoom.list.forEach((entity, index) => {
                         if (entity == data.text){
                             currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
+                            
+                            if (currentRoom.list.length === 0){
+                                console.log("Liste vide :", currentRoom.list)
+                                let aliveUsers = currentRoom.users.filter(user => user.state === "alive");
+                                let deadUsers = currentRoom.users.filter(user => user.state === "dead");
+                                broadcast(JSON.stringify({
+                                    type: 'multi_win',
+                                    username: aliveUsers.map(user => user.username),
+                                    winnerAvatars: aliveUsers.map(user => user.avatar),
+                                    loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
+                                    gameCode: data.gameCode,
+                                }));
+                            }
 
-                            do {
-                                currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
-                            } while (currentRoom.users[currentRoom.currentPlayerIndex].state == "dead");
+                            else{
+                                do {
+                                    currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+                                } while (currentRoom.users[currentRoom.currentPlayerIndex].state == "dead");
 
-                            currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
-                            const turnUpdateMessage = JSON.stringify({
-                                type: 'turn_success',
-                                text: data.text,
-                                currentPlayer: currentRoom.currentPlayer,
-                                gameCode: data.gameCode,
-                            });
-                            broadcast(turnUpdateMessage);
+                                currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
+                                const turnUpdateMessage = JSON.stringify({
+                                    type: 'turn_success',
+                                    text: data.text,
+                                    currentPlayer: currentRoom.currentPlayer,
+                                    gameCode: data.gameCode,
+                                });
+                                broadcast(turnUpdateMessage);
+                            }
                         }
                     });
                 } else {
@@ -152,18 +167,30 @@ wss.on('connection', (ws) => {
                         const deadIndex = actualRoom.currentPlayerIndex;
                         actualRoom.users[deadIndex].state = "dead";
                                         
-                        do {
+                        do {  // cherche l'index du prochain joueur en vie
                             actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
                         } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
-                
-                        broadcast(JSON.stringify({
-                            type: 'kill',
-                            index: deadIndex,
-                            gameCode: gameCode,
-                            currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
-                        }));
-                
-                        check_victory(gameCode);
+                        
+                        if (check_victory(gameCode)) {
+                            let aliveUsers = actualRoom.users.filter(user => user.state === "alive");
+                            let deadUsers = actualRoom.users.filter(user => user.state === "dead");
+                        
+                            broadcast(JSON.stringify({
+                                type: 'solo_win',
+                                username: aliveUsers[0].username,
+                                avatar: aliveUsers[0].avatar,
+                                loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
+                                gameCode: gameCode,
+                            }));
+                        }
+                        else{
+                            broadcast(JSON.stringify({
+                                type: 'kill',
+                                index: deadIndex,
+                                gameCode: gameCode,
+                                currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
+                            }));
+                        }
                     }
                     break;
                 
@@ -184,13 +211,17 @@ wss.on('error', (error) => {
 });
 
 
-function check_victory(roomCode){
+function check_victory(roomCode){ // vérifie si la game est win, si oui elle return true
     const room = rooms[roomCode];
-    if (room.users.length == 1){
-        console.log("GAGNEEEE")
+    const aliveUsers = room.users.filter(user => user.state === "alive");
+
+    if (aliveUsers.length === 1) {
+        const winner = aliveUsers[0];
+        console.log(`Victoire de ${winner.username} !`);
+        console.log(`Avatar : ${winner.avatar}`);
+        return true;
     }
 }
-
 
 // Fonction de diffusion des messages à tous les clients WebSocket connectés
 function broadcast(message) {

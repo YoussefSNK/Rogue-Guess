@@ -21,7 +21,6 @@
     opacity: 1; /* Pleine opacité au survol */
 }
 
-
 .container {
     display: flex;
     justify-content: center;
@@ -68,4 +67,57 @@
     font-size: 24px;
     width: 100%;
     max-width: 500px;
+}
+
+.victory-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 24px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+}
+
+.victory-avatar, .winner-avatar {
+    display: block;
+    margin: 20px auto;
+    width: 300px; /* Ajuster la taille de l'avatar */
+    height: 300px; /* Ajuster la taille de l'avatar */
+    border-radius: 50%;
+}
+
+.winners-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Espace entre les avatars */
+}
+
+
+.eliminated-player {
+    width: 100px; /* Largeur souhaitée */
+    height: auto; /* Ajustement automatique de la hauteur selon la largeur */
+    filter: grayscale(80%); /* Conversion en niveaux de gris */
+}
+
+#losers-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%; /* Ajustez la largeur selon vos besoins */
+    background-color: rgba(0, 0, 0, 0.5); /* Fond rouge semi-transparent pour illustrer */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px; /* Espacement interne pour les avatars */
+}
+
+.loser-avatar {
+    width: 100; /* Ajustez la taille des avatars selon vos besoins */
+    height: auto;
+    margin: 5px; /* Marge autour de chaque avatar */
 }

@@ -14,10 +14,17 @@
         <div class="turn-info" id="turn-info"></div>
         <div class="timer" id="timer"></div>
         <div class="center">
-            <input type="text" id="game-input" placeholder="Votre texte ici...">
+            <input type="text" id="game-input" placeholder="...">
         </div>
         <div class="player-list" id="player-list"></div>
     </div>
+<!-- Message de victoire -->
+<div class="victory-message" id="victory-message">
+    <div id="victory-username"></div>
+    <div id="winners-container" class="winners-container"></div>
+</div>
+<div class="losers-container" id="losers-container"></div>
+
 
     <script>
         const socket = new WebSocket('ws://localhost:3000');
@@ -58,7 +65,7 @@
                 case 'turn_success':
                     if (msg.gameCode === gameCode) {
                         updateTextInput("");
-                        addBackgroundImage(msg.text);  // Ajout de l'image de fond
+                        addBackgroundImage(msg.text);
                         currentPlayer = msg.currentPlayer;
                         document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
                         toggleInput(currentPlayer === username);
@@ -75,6 +82,7 @@
                     if (msg.gameCode === gameCode) {
                         updateTextInput("");
 
+
                         handleKill(msg.index);
                         currentPlayer = msg.currentPlayer;
                         document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
@@ -84,6 +92,67 @@
                         startCountdown(10);
                     }
                     break;
+                case 'solo_win':
+                    if (msg.gameCode === gameCode) {
+                        const victoryMessage = document.getElementById('victory-message');
+                        const victoryUsername = document.getElementById('victory-username');
+                        const victoryAvatar = document.getElementById('victory-avatar');
+
+                        victoryUsername.innerText = `Victoire de : ${msg.username}`;
+                        victoryAvatar.src = msg.avatar;
+
+                        const losersContainer = document.getElementById('losers-container');
+                        losersContainer.innerHTML = '';
+
+                        // Afficher les avatars des loosers
+                        msg.loserAvatars.forEach(avatarUrl => {
+                            const loserAvatar = document.createElement('img');
+                            loserAvatar.src = avatarUrl;
+                            loserAvatar.classList.add('loser-avatar');
+                            losersContainer.appendChild(loserAvatar);
+                        });
+
+                        // Afficher le message de victoire et l'avatar au milieu de l'écran
+                        victoryMessage.style.display = 'block';
+
+                        // Cacher les autres éléments du jeu
+                        document.querySelector('.container').style.display = 'none';
+                    }
+                    break;
+                    case 'multi_win':
+    if (msg.gameCode === gameCode) {
+        const victoryMessage = document.getElementById('victory-message');
+        const victoryUsername = document.getElementById('victory-username');
+        const winnersContainer = document.getElementById('winners-container');
+        const losersContainer = document.getElementById('losers-container');
+
+        victoryUsername.innerText = `Victoire de : ${msg.username.join(', ')}`;
+        winnersContainer.innerHTML = '';
+        losersContainer.innerHTML = '';
+
+        // Afficher les avatars des gagnants
+        msg.winnerAvatars.forEach(avatarUrl => {
+            const winnerAvatar = document.createElement('img');
+            winnerAvatar.src = avatarUrl;
+            winnerAvatar.classList.add('winner-avatar');
+            winnersContainer.appendChild(winnerAvatar);
+        });
+
+        // Afficher les avatars des perdants
+        msg.loserAvatars.forEach(avatarUrl => {
+            const loserAvatar = document.createElement('img');
+            loserAvatar.src = avatarUrl;
+            loserAvatar.classList.add('loser-avatar');
+            losersContainer.appendChild(loserAvatar);
+        });
+
+        // Afficher le message de victoire et les avatars des gagnants au milieu de l'écran
+        victoryMessage.style.display = 'block';
+
+        // Cacher les autres éléments du jeu
+        document.querySelector('.container').style.display = 'none';
+    }
+    break;
                 default:
                     console.log('Type de message non pris en charge:', msg.type);
                     break;
@@ -177,13 +246,10 @@
 
         function displayPlayers(players) {
             const container = document.querySelector('.container');
-            const playerList = document.getElementById('player-list');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
             const radius = 250;
             const angleStep = 2 * Math.PI / players.length;
             const startAngle = Math.PI / 2; // Commence à partir du bas
-
-            playerList.innerHTML = '';
             container.querySelectorAll('.avatar').forEach(avatar => avatar.remove()); // Supprimer les anciens avatars
 
             players.forEach((player, index) => {
@@ -191,30 +257,40 @@
                 const x = center.x + radius * Math.cos(angle) - 25;
                 const y = center.y + radius * Math.sin(angle) - 25;
 
-                const avatar = document.createElement('img');
+                let avatar = document.createElement('img');
                 avatar.src = player.avatar;
                 avatar.classList.add('avatar');
                 avatar.style.left = `${x}px`;
                 avatar.style.top = `${y}px`;
                 container.appendChild(avatar);
-
-                const playerItem = document.createElement('div');
-                playerItem.innerText = `${player.username}`;
-                playerList.appendChild(playerItem);
             });
         }
 
         function handleKill(index) {
             const killedPlayer = generalPlayers[index];
+            const playerList = document.getElementById('player-list');
+
             if (killedPlayer) {
+
+                let avatar = document.createElement('img');
+                avatar.src = killedPlayer.avatar;
+                avatar.classList.add('eliminated-player');
+
+                playerList.appendChild(avatar);
+
+
                 const uuid = killedPlayer.uuid;
                 currentPlayers = currentPlayers.filter(player => player.uuid !== uuid);
                 deadPlayers.push(killedPlayer);
+
                 displayPlayers(currentPlayers);
             } else {
                 console.error('Invalid index for killed player:', index);
             }
         }
+
+
+
     </script>
 </body>
 </html>
