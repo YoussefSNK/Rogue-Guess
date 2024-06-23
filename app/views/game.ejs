@@ -6,7 +6,6 @@
     <title>Jeu en ligne</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css" />
     <link rel="stylesheet" type="text/css" href="css/game.css" />
-    
 </head>
 <body>
     <div id="background"></div>
@@ -28,7 +27,10 @@
         let currentPlayer = '';
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
-
+        let generalPlayers = []; // restera la même tout le temps
+        let deadPlayers = [];
+        let countdownInterval; 
+    
         console.log('Game code:', gameCode);
         console.log('Username:', username);
 
@@ -44,12 +46,14 @@
             switch(msg.type) {
                 case 'game_users':
                     displayPlayers(msg.users);
-                    currentPlayers = msg.users;
+                    generalPlayers = msg.users.slice();
+                    currentPlayers = msg.users.slice();
+                    console.log("game_users : currentPlayers:", currentPlayers)
                     document.getElementById('theme').innerText = `Thème : ${msg.theme}`;
                     currentPlayer = currentPlayers[0].username;
-                    turnEndTime = 5000;
                     document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
                     toggleInput(currentPlayer === username);
+                    startCountdown(5);
                     break;
                 case 'turn_success':
                     if (msg.gameCode === gameCode) {
@@ -59,11 +63,25 @@
                         document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
                         toggleInput(currentPlayer === username);
                         animateRotation(Math.PI * 2 / currentPlayers.length);
+                        startCountdown(10);
                     }
                     break;
                 case 'text_update':
-                    if ((msg.username !== username) && (msg.gameCode == gameCode)) {
+                    if ((msg.username !== username) && (msg.gameCode === gameCode)) {
                         updateTextInput(msg.text);
+                    }
+                    break;
+                case 'kill':
+                    if (msg.gameCode === gameCode) {
+                        updateTextInput("");
+
+                        handleKill(msg.index);
+                        currentPlayer = msg.currentPlayer;
+                        document.getElementById('turn-info').innerText = `C'est au tour de ${currentPlayer}`;
+                        toggleInput(currentPlayer === username);
+                        // animateRotation(Math.PI * 2 / currentPlayers.length);
+                        displayPlayers(currentPlayers)
+                        startCountdown(10);
                     }
                     break;
                 default:
@@ -77,35 +95,50 @@
         });
 
         document.getElementById('game-input').addEventListener('input', function(e) {
-            console.log('Input event detected');
             if (currentPlayer === username) {
-                console.log('Sending text update:', e.target.value);
                 socket.send(JSON.stringify({
                     type: 'text_update',
                     text: e.target.value,
                     gameCode: gameCode,
                     username: username
                 }));
-            } else {
-                console.log('Text input ignored, not your turn');
             }
         });
 
         document.getElementById('game-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                console.log('Enter key pressed');
-                if (currentPlayer === username) {
-                    socket.send(JSON.stringify({
-                        type: 'send_answer',
-                        gameCode: gameCode,
-                        username: username,
-                        text: document.getElementById('game-input').value 
-                    }));
-                } else {
-                    console.log('Enter key press ignored, not your turn');
-                }
+            if (e.key === 'Enter' && currentPlayer === username) {
+                socket.send(JSON.stringify({
+                    type: 'send_answer',
+                    gameCode: gameCode,
+                    username: username,
+                    text: e.target.value
+                }));
             }
         });
+
+        function startCountdown(seconds) {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            let remainingTime = seconds;
+            document.getElementById('timer').innerText = remainingTime;
+
+            countdownInterval = setInterval(() => {
+                remainingTime--;
+                document.getElementById('timer').innerText = remainingTime;
+
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    handleCountdownEnd();
+                }
+            }, 1000);
+        }
+
+        function handleCountdownEnd() {
+            if (currentPlayer === username) {
+                socket.send(JSON.stringify({ type: 'looser', gameCode: gameCode, username: username }));
+            }
+        }
 
         function updateTextInput(text) {
             document.getElementById('game-input').value = text;
@@ -143,7 +176,6 @@
         }
 
         function displayPlayers(players) {
-            currentPlayers = players; // Mettre à jour les joueurs actuels
             const container = document.querySelector('.container');
             const playerList = document.getElementById('player-list');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
@@ -155,7 +187,7 @@
             container.querySelectorAll('.avatar').forEach(avatar => avatar.remove()); // Supprimer les anciens avatars
 
             players.forEach((player, index) => {
-                const angle = startAngle + index * angleStep + angleOffset;
+                const angle = startAngle - index * angleStep + angleOffset;
                 const x = center.x + radius * Math.cos(angle) - 25;
                 const y = center.y + radius * Math.sin(angle) - 25;
 
@@ -172,7 +204,17 @@
             });
         }
 
-
+        function handleKill(index) {
+            const killedPlayer = generalPlayers[index];
+            if (killedPlayer) {
+                const uuid = killedPlayer.uuid;
+                currentPlayers = currentPlayers.filter(player => player.uuid !== uuid);
+                deadPlayers.push(killedPlayer);
+                displayPlayers(currentPlayers);
+            } else {
+                console.error('Invalid index for killed player:', index);
+            }
+        }
     </script>
 </body>
 </html>

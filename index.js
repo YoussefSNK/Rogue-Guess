@@ -60,7 +60,7 @@ wss.on('connection', (ws) => {
             case 'user_info':
                 let user = users.find(user => user.uuid === data.userInfo.uuid);
                 if (!user) {
-                    user = { username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid, ws: ws };
+                    user = { username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid, state: data.userInfo.state, ws: ws };
                     users.push(user);
                 } else {
                     user.ws = ws; // Mettre à jour la référence WebSocket
@@ -75,14 +75,9 @@ wss.on('connection', (ws) => {
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
-                console.log(data.uuid, "==", users[0].uuid)
                 if(data.uuid == users[0].uuid){
-
-                    console.log("ok ?")
                     const theme = data.theme + ".png";
                     const gameCode = generateGameCode();
-
-                    console.log("Themeo = ", theme)
                     logController.getSQLByTheme(theme, (err, sqlrequest) => {
                         if (err){
                             console.error('Erreur lors de la récupération des entités:', err);
@@ -116,7 +111,7 @@ wss.on('connection', (ws) => {
             case 'request_game_users':
                 const roomCode = data.gameCode;
                 const room = rooms[roomCode] || { users: [], theme: '' };
-                ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar })), theme: room.theme }));
+                ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar, uuid: user.uuid })), theme: room.theme }));
                 break;
             case 'text_update':
                 broadcast(JSON.stringify({ type: 'text_update', text: data.text, username: data.username, gameCode: data.gameCode }));
@@ -124,15 +119,14 @@ wss.on('connection', (ws) => {
             case 'send_answer':
                 const currentRoom = rooms[data.gameCode];
                 if (currentRoom) {
-
                     currentRoom.list.forEach((entity, index) => {
-                        
                         if (entity == data.text){
-                            
                             currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
-                            
-                            currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
-      
+
+                            do {
+                                currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+                            } while (currentRoom.users[currentRoom.currentPlayerIndex].state == "dead");
+
                             currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
                             const turnUpdateMessage = JSON.stringify({
                                 type: 'turn_success',
@@ -147,6 +141,35 @@ wss.on('connection', (ws) => {
                     console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
                 }
                 break;
+
+                case 'looser':
+                    const gameCode = data.gameCode;
+                    const username = data.username;
+                    const actualRoom = rooms[gameCode];
+                
+                    console.log("oui", username, "est un looser");
+                
+                    if (actualRoom) {
+                        const deadIndex = actualRoom.currentPlayerIndex;
+                        actualRoom.users[deadIndex].state = "dead";
+                        
+                        console.log(actualRoom.users[deadIndex].username, "est dead");
+                
+                        do {
+                            actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
+                        } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
+                
+                        broadcast(JSON.stringify({
+                            type: 'kill',
+                            index: deadIndex,
+                            gameCode: gameCode,
+                            currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
+                        }));
+                
+                        check_victory(gameCode);
+                    }
+                    break;
+                
             default:
                 break;
         }

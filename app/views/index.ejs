@@ -76,7 +76,7 @@
             sessionStorage.setItem('avatar', avatar);
             const uuid = uuidv4();
             sessionStorage.setItem('uuid', uuid);
-            const userInfo = { username: name, avatar: avatar, uuid: uuid };
+            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive" };
             socket.send(JSON.stringify({ type: 'user_info', userInfo: userInfo }));
             window.location.href = `/chat?gameCode=${encodeURIComponent(gameCode)}`;
         }
