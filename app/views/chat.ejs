@@ -87,6 +87,7 @@
                         imgElement.addEventListener('click', () => {
                             socket.send(JSON.stringify({
                                 type: 'start_game',
+                                uuid: sessionStorage.getItem('uuid'),
                                 theme: image.Image.replace('.png', '')
                             }));
                         });

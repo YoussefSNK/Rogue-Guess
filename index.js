@@ -75,37 +75,42 @@ wss.on('connection', (ws) => {
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
-                const theme = data.theme + ".png";
-                const gameCode = generateGameCode();
+                console.log(data.uuid, "==", users[0].uuid)
+                if(data.uuid == users[0].uuid){
 
-                console.log("Themeo = ", theme)
-                logController.getSQLByTheme(theme, (err, sqlrequest) => {
-                    if (err){
-                        console.error('Erreur lors de la récupération des entités:', err);
-                        return;
-                    }
-                    logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
-                        if (err) {
+                    console.log("ok ?")
+                    const theme = data.theme + ".png";
+                    const gameCode = generateGameCode();
+
+                    console.log("Themeo = ", theme)
+                    logController.getSQLByTheme(theme, (err, sqlrequest) => {
+                        if (err){
                             console.error('Erreur lors de la récupération des entités:', err);
                             return;
                         }
-                        rooms[gameCode] = {
-                            users: users.slice(),
-                            theme: theme,
-                            list: entities,
-                            currentPlayerIndex: 0,
-                            turnEndTime: Date.now() + 5000
-                        };
-                        broadcastToRoom(gameCode, JSON.stringify({
-                            type: 'redirect_game',
-                            gameCode: gameCode,
-                            theme: theme,
-                            users: users
-                        }));
+                        logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
+                            if (err) {
+                                console.error('Erreur lors de la récupération des entités:', err);
+                                return;
+                            }
+                            rooms[gameCode] = {
+                                users: users.slice(),
+                                theme: theme,
+                                list: entities,
+                                currentPlayerIndex: 0,
+                                turnEndTime: Date.now() + 5000
+                            };
+                            broadcastToRoom(gameCode, JSON.stringify({
+                                type: 'redirect_game',
+                                gameCode: gameCode,
+                                theme: theme,
+                                users: users
+                            }));
 
-                        users = [];
-                    });
-                })
+                            users = [];
+                        });
+                    })
+                }
 
                 break;
             case 'request_game_users':
@@ -145,6 +150,7 @@ wss.on('connection', (ws) => {
             default:
                 break;
         }
+
     });
 
     ws.on('close', () => {
