@@ -147,14 +147,11 @@ wss.on('connection', (ws) => {
                     const username = data.username;
                     const actualRoom = rooms[gameCode];
                 
-                    console.log("oui", username, "est un looser");
                 
                     if (actualRoom) {
                         const deadIndex = actualRoom.currentPlayerIndex;
                         actualRoom.users[deadIndex].state = "dead";
-                        
-                        console.log(actualRoom.users[deadIndex].username, "est dead");
-                
+                                        
                         do {
                             actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
                         } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
@@ -224,7 +221,6 @@ function broadcastToRoom(roomCode, message) {
     } else {
     }
 }
-
 
 
 
