@@ -42,7 +42,7 @@ exports.getEntitiesBySQLRequest = (sqlRequest, callback) => {
           callback(err, null);
       } else {
           const entities = rows.map(row => row.Name);
-          console.log('Entités récupérées pour la requête SQL:', entities);
+          // console.log('Entités récupérées pour la requête SQL:', entities);
           callback(null, entities);
       }
   });
@@ -57,7 +57,7 @@ exports.getSQLByTheme = (theme, callback) => {
       } else {
           // Vous devez mapper les résultats sur la colonne SQL_Request
           const sqlRequests = rows.map(row => row.SQL_Request);
-          console.log('Requêtes SQL récupérées pour le thème', theme, ':', sqlRequests);
+          // console.log('Requêtes SQL récupérées pour le thème', theme, ':', sqlRequests);
           callback(null, sqlRequests);
       }
   });
