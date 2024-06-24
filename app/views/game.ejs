@@ -18,12 +18,11 @@
         </div>
         <div class="player-list" id="player-list"></div>
     </div>
-<!-- Message de victoire -->
-<div class="victory-message" id="victory-message">
-    <div id="victory-username"></div>
-    <div id="winners-container" class="winners-container"></div>
-</div>
-<div class="losers-container" id="losers-container"></div>
+    <div class="victory-message" id="victory-message">
+        <div id="victory-username"></div>
+        <div id="winners-container" class="winners-container"></div>
+    </div>
+    <div class="losers-container" id="losers-container"></div>
 
 
     <script>
@@ -36,7 +35,7 @@
         let currentPlayers = [];
         let generalPlayers = []; // restera la même tout le temps
         let deadPlayers = [];
-        let countdownInterval; 
+        let countdownInterval;
         let gameEnCours = 1;
     
         console.log('Game code:', gameCode);
@@ -51,7 +50,7 @@
             const msg = JSON.parse(event.data);
 
             if (msg.type.type != "text_update"){console.log('Message reçu:', msg);}
-
+            
             switch(msg.type) {
                 case 'game_users':
                     displayPlayers(msg.users);
@@ -96,66 +95,64 @@
                     break;
                 case 'solo_win':
                     if (msg.gameCode === gameCode) {
-                        const victoryMessage = document.getElementById('victory-message');
-                        const victoryUsername = document.getElementById('victory-username');
-                        const victoryAvatar = document.getElementById('victory-avatar');
+                        let victoryMessage = document.getElementById('victory-message');
+                        let victoryUsername = document.getElementById('victory-username');
+                        let winnersContainer = document.getElementById('winners-container');
 
-                        victoryUsername.innerText = `Victoire de : ${msg.username}`;
-                        victoryAvatar.src = msg.avatar;
+                        victoryUsername.innerText = `Victoire de ${msg.username}`;
 
-                        const losersContainer = document.getElementById('losers-container');
+                        let winnerAvatar = document.createElement('img');
+                        winnerAvatar.src = msg.avatar;
+                        winnerAvatar.classList.add('winner-avatar');
+                        winnersContainer.appendChild(winnerAvatar);
+
+
+
+
+                        let losersContainer = document.getElementById('losers-container');
                         losersContainer.innerHTML = '';
-
-                        // Afficher les avatars des loosers
                         msg.loserAvatars.forEach(avatarUrl => {
-                            const loserAvatar = document.createElement('img');
+                            let loserAvatar = document.createElement('img');
                             loserAvatar.src = avatarUrl;
                             loserAvatar.classList.add('loser-avatar');
                             losersContainer.appendChild(loserAvatar);
                         });
 
-                        // Afficher le message de victoire et l'avatar au milieu de l'écran
                         victoryMessage.style.display = 'block';
-
-                        // Cacher les autres éléments du jeu
                         document.querySelector('.container').style.display = 'none';
                     }
                     break;
-                    case 'multi_win':
+                case 'multi_win':
                     gameEnCours = 0;
-    if (msg.gameCode === gameCode) {
-        const victoryMessage = document.getElementById('victory-message');
-        const victoryUsername = document.getElementById('victory-username');
-        const winnersContainer = document.getElementById('winners-container');
-        const losersContainer = document.getElementById('losers-container');
+                    if (msg.gameCode === gameCode) {
+                        let victoryMessage = document.getElementById('victory-message');
+                        let victoryUsername = document.getElementById('victory-username');
+                        let winnersContainer = document.getElementById('winners-container');
+                        let losersContainer = document.getElementById('losers-container');
 
-        victoryUsername.innerText = `Victoire de : ${msg.username.join(', ')}`;
-        winnersContainer.innerHTML = '';
-        losersContainer.innerHTML = '';
+                        victoryUsername.innerText = `Victoire de ${msg.username.join(', ')}`;
+                        winnersContainer.innerHTML = '';
+                        losersContainer.innerHTML = '';
 
-        // Afficher les avatars des gagnants
-        msg.winnerAvatars.forEach(avatarUrl => {
-            const winnerAvatar = document.createElement('img');
-            winnerAvatar.src = avatarUrl;
-            winnerAvatar.classList.add('winner-avatar');
-            winnersContainer.appendChild(winnerAvatar);
-        });
+                        msg.winnerAvatars.forEach(avatarUrl => {
+                            let winnerAvatar = document.createElement('img');
+                            winnerAvatar.src = avatarUrl;
+                            winnerAvatar.classList.add('winner-avatar');
+                            winnersContainer.appendChild(winnerAvatar);
+                        });
 
-        // Afficher les avatars des perdants
-        msg.loserAvatars.forEach(avatarUrl => {
-            const loserAvatar = document.createElement('img');
-            loserAvatar.src = avatarUrl;
-            loserAvatar.classList.add('loser-avatar');
-            losersContainer.appendChild(loserAvatar);
-        });
+                        msg.loserAvatars.forEach(avatarUrl => {
+                            let loserAvatar = document.createElement('img');
+                            loserAvatar.src = avatarUrl;
+                            loserAvatar.classList.add('loser-avatar');
+                            losersContainer.appendChild(loserAvatar);
+                        });
 
-        // Afficher le message de victoire et les avatars des gagnants au milieu de l'écran
-        victoryMessage.style.display = 'block';
-
-        // Cacher les autres éléments du jeu
-        document.querySelector('.container').style.display = 'none';
-    }
-    break;
+                        losersContainer.style.display = 'block';
+                        victoryMessage.style.display = 'block';
+                        document.querySelector('.container').style.display = 'none';
+                    }
+                    break;
                 default:
                     console.log('Type de message non pris en charge:', msg.type);
                     break;
