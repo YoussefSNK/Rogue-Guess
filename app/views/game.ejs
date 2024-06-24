@@ -48,7 +48,8 @@
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
-            console.log('Message reçu:', msg);
+
+            if (msg.type.type != "text_update"){console.log('Message reçu:', msg);}
 
             switch(msg.type) {
                 case 'game_users':
@@ -198,38 +199,26 @@
 
                 if (remainingTime <= 0) {
                     clearInterval(countdownInterval);
-                    handleCountdownEnd();
+                    if ((currentPlayer === username) && (gameEnCours == 1)) {socket.send(JSON.stringify({ type: 'looser', gameCode: gameCode, username: username }));}
                 }
             }, 1000);
         }
 
-        function handleCountdownEnd() {
-            if (currentPlayer === username) {
-                socket.send(JSON.stringify({ type: 'looser', gameCode: gameCode, username: username }));
-            }
-        }
 
-        function updateTextInput(text) {
-            document.getElementById('game-input').value = text;
-        }
-
-        function toggleInput(enable) {
-            document.getElementById('game-input').disabled = !enable;
-        }
+        function updateTextInput(text) {document.getElementById('game-input').value = text;}
+        function toggleInput(enable) {document.getElementById('game-input').disabled = !enable;}
 
         function addBackgroundImage(text) {
             const img = document.createElement('img');
             img.src = `/images/entity/${text}.png`;
             img.classList.add('background-image');
-            document.getElementById('background').appendChild(img);
-        }
+            document.getElementById('background').appendChild(img);}
 
         function animateRotation(rotationAngle) {
             const startAngle = angleOffset;
             const targetAngle = angleOffset + rotationAngle;
             const duration = 250;
             const startTime = performance.now();
-
             function stepAnimation(timestamp) {
                 const elapsed = timestamp - startTime;
                 const progress = Math.min(elapsed / duration, 1); // Calculer le progrès de l'animation de 0 à 1
@@ -285,7 +274,7 @@
 
                 displayPlayers(currentPlayers);
             } else {
-                console.error('Invalid index for killed player:', index);
+                console.error('[handleKill] Problème d\'index :', index);
             }
         }
 
