@@ -11,7 +11,7 @@ const wss = new WebSocket.Server({ server });
 
 const port = process.env.PORT || 3000;
 
-const db = require('./app/database/database');
+// const db = require('./app/database/database');
 
 const logRoutes = require('./app/routes/logRoutes');
 const dbRoutes = require('./app/routes/dbRoutes');
@@ -20,7 +20,7 @@ const dbController = require('./app/controllers/dbController');
 
 process.on('uncaughtException', (err) => {
     console.error('Erreur non capturée :', err);
-    process.exit(1); // Exit le processus avec un code d'erreur
+    process.exit(1); 
 });
 
 
@@ -52,6 +52,7 @@ app.get('/game', (req, res) => {
 
 app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
+
 
 function generateGameCode() {
     return crypto.randomBytes(3).toString('hex');
