@@ -3,7 +3,6 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const bodyParser = require('body-parser');
-const logRoutes = require('./app/routes/logRoutes');
 const crypto = require('crypto');
 
 const app = express();
@@ -13,7 +12,11 @@ const wss = new WebSocket.Server({ server });
 const port = process.env.PORT || 3000;
 
 const db = require('./app/database/database');
+
+const logRoutes = require('./app/routes/logRoutes');
+const dbRoutes = require('./app/routes/dbRoutes');
 const logController = require('./app/controllers/logController');
+const dbController = require('./app/controllers/dbController');
 
 process.on('uncaughtException', (err) => {
     console.error('Erreur non capturée :', err);
@@ -39,10 +42,15 @@ app.get('/chat', (req, res) => {
     res.render('chat', { gameCode: req.query.gameCode });
 });
 
+app.get('/formulaire', (req, res) => {res.render('formulaire');});
+app.post('/formulaire', dbController.createFormEntry);
+
+
 app.get('/game', (req, res) => {
     res.render('game', { gameCode: req.query.gameCode });
 });
 
+app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
 
 function generateGameCode() {
@@ -185,8 +193,7 @@ wss.on('connection', (ws) => {
                         }));
                         }
                 }
-                break;
-            
+                break; 
             default:
                 break;
         }
@@ -215,7 +222,6 @@ function check_victory(roomCode){ // vérifie si la game est win, si oui elle re
         return true;
     }
 }
-
 // Fonction de diffusion des messages à tous les clients WebSocket connectés
 function broadcast(message) {
     wss.clients.forEach((client) => {
@@ -224,7 +230,6 @@ function broadcast(message) {
         }
     });
 }
-
 // Diffuse tous les users
 function broadcastUsers() {
     const userListMessage = JSON.stringify({ type: 'user_list', users: users });
@@ -245,8 +250,6 @@ function broadcastToRoom(roomCode, message) {
     } else {
     }
 }
-
-
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);

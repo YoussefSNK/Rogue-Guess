@@ -22,6 +22,9 @@ function createTables() {
   const dropTablesQueryRequest = `
     DROP TABLE IF EXISTS Request;
   `;
+  const dropTablesQueryForm = `
+    DROP TABLE IF EXISTS Form;
+  `;
   const createTableQueryLogs = `
     CREATE TABLE IF NOT EXISTS Logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,6 +48,14 @@ function createTables() {
       Image TEXT NOT NULL
     );
   `;
+  const createTableQueryForm = `
+    CREATE TABLE IF NOT EXISTS Form (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Title TEXT NOT NULL,
+      Option TEXT NOT NULL,
+      Text TEXT NOT NULL
+    );
+  `;
 
   db.serialize(() => {
     // Supprimer les tables existantes
@@ -66,27 +77,43 @@ function createTables() {
               } else {
                 console.log('Table Request supprimée avec succès.');
 
-                // Créer les tables
-                db.run(createTableQueryLogs, (err) => {
+
+                db.run(dropTablesQueryForm, (err) => {
                   if (err) {
-                    console.error('Erreur lors de la création de la table Logs :', err.message);
+                    console.error('Erreur lors de la suppression des formulaires :', err.message);
                   } else {
-                    console.log('Table Logs créée avec succès.');
-
-                    db.run(createTableQueryEntity, (err) => {
+                    console.log('Table Form supprimée avec succès.');
+  
+                    db.run(createTableQueryLogs, (err) => {
                       if (err) {
-                        console.error('Erreur lors de la création de la table Entity :', err.message);
+                        console.error('Erreur lors de la création de la table Logs :', err.message);
                       } else {
-                        console.log('Table Entity créée avec succès.');
+                        console.log('Table Logs créée avec succès.');
 
-                        db.run(createTableQueryRequest, (err) => {
+                        db.run(createTableQueryEntity, (err) => {
                           if (err) {
-                            console.error('Erreur lors de la création de la table Request :', err.message);
+                            console.error('Erreur lors de la création de la table Entity :', err.message);
                           } else {
-                            console.log('Table Request créée avec succès.');
+                            console.log('Table Entity créée avec succès.');
 
-                            // Insérer les données initiales
-                            insertInitialData();
+                            db.run(createTableQueryRequest, (err) => {
+                              if (err) {
+                                console.error('Erreur lors de la création de la table Request :', err.message);
+                              } else {
+                                console.log('Table Request créée avec succès.');
+
+
+                                db.run(createTableQueryForm, (err) => {
+                                  if (err) {
+                                    console.error('Erreur lors de la création de la table Form :', err.message);
+                                  } else {
+                                    console.log('Table Form créée avec succès.');
+
+                                    insertInitialData();
+                                  }
+                                });
+                              }
+                            });
                           }
                         });
                       }
@@ -323,6 +350,14 @@ function insertInitialData() {
     ("Valeurs de test", "SELECT Name FROM Entity WHERE Licence = 'Test'", "Les valeurs sont 1 et 2.png");
   `;
 
+  const insertQueryForm = `
+    INSERT INTO Form (Title, Option, Text) VALUES
+    ("Des pouvoirs !", "1", "Ce serait bien si on pouvait avoir des pouvoirs pour embêter nos adversaires pendant la partie !"),
+    ("On voit pas le dernier perso annoncé", "4", "Lorsque le dernier personnage est cité il n'apparait pas derrière nous dans l'écran de victoire");
+  `;
+
+
+
   db.serialize(() => {
     db.run(insertQueryLogs, (err) => {
       if (err) {
@@ -337,6 +372,15 @@ function insertInitialData() {
         console.error('Erreur lors de l\'insertion des données initiales dans Entity :', err.message);
       } else {
         console.log('Données des Entity insérées avec succès.');
+      }
+    });
+
+
+    db.run(insertQueryForm, (err) => {
+      if (err) {
+        console.error('Erreur lors de l\'insertion des données initiales dans Form :', err.message);
+      } else {
+        console.log('Données des Form insérées avec succès.');
       }
     });
 
