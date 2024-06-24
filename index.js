@@ -122,9 +122,7 @@ wss.on('connection', (ws) => {
                     currentRoom.list.forEach((entity, index) => {
                         if (entity == data.text){
                             currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
-                            
-                            if (currentRoom.list.length === 0){
-                                console.log("Liste vide :", currentRoom.list)
+                            if (currentRoom.list.length === 0){ // si la liste des trucs à deviner est vide
                                 let aliveUsers = currentRoom.users.filter(user => user.state === "alive");
                                 let deadUsers = currentRoom.users.filter(user => user.state === "dead");
                                 broadcast(JSON.stringify({
@@ -133,9 +131,7 @@ wss.on('connection', (ws) => {
                                     winnerAvatars: aliveUsers.map(user => user.avatar),
                                     loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
                                     gameCode: data.gameCode,
-                                }));
-                            }
-
+                            }));}
                             else{
                                 do {
                                     currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
@@ -149,51 +145,52 @@ wss.on('connection', (ws) => {
                                     gameCode: data.gameCode,
                                 });
                                 broadcast(turnUpdateMessage);
-                            }
-                        }
-                    });
+                }}});
                 } else {
                     console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
                 }
                 break;
-
-                case 'looser':
-                    const gameCode = data.gameCode;
-                    const username = data.username;
-                    const actualRoom = rooms[gameCode];
-                
-                
-                    if (actualRoom) {
-                        const deadIndex = actualRoom.currentPlayerIndex;
-                        actualRoom.users[deadIndex].state = "dead";
-                                        
-                        do {  // cherche l'index du prochain joueur en vie
-                            actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
-                        } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
-                        
-                        if (check_victory(gameCode)) {
-                            let aliveUsers = actualRoom.users.filter(user => user.state === "alive");
-                            let deadUsers = actualRoom.users.filter(user => user.state === "dead");
-                        
-                            broadcast(JSON.stringify({
-                                type: 'solo_win',
-                                username: aliveUsers[0].username,
-                                avatar: aliveUsers[0].avatar,
-                                loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
-                                gameCode: gameCode,
-                            }));
-                        }
-                        else{
-                            broadcast(JSON.stringify({
-                                type: 'kill',
-                                index: deadIndex,
-                                gameCode: gameCode,
-                                currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
-                            }));
-                        }
+            case 'looser':
+                console.log("Cas du looser reçu", data)
+                const gameCode = data.gameCode;
+                const username = data.username;
+                const actualRoom = rooms[gameCode];
+            
+            
+                if (actualRoom) {
+                    const deadIndex = actualRoom.currentPlayerIndex;
+                    actualRoom.users[deadIndex].state = "dead";
+                                    
+                    do {  // cherche l'index du prochain joueur en vie
+                        actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
+                    } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
+                    
+                    if (check_victory(gameCode)) {
+                        let aliveUsers = actualRoom.users.filter(user => user.state === "alive");
+                        let deadUsers = actualRoom.users.filter(user => user.state === "dead");
+                    
+                        broadcast(JSON.stringify({
+                            type: 'solo_win',
+                            username: aliveUsers[0].username,
+                            avatar: aliveUsers[0].avatar,
+                            loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
+                            gameCode: gameCode,
+                        }));
+                        console.log("gg la win")
                     }
-                    break;
-                
+                    else{
+                        broadcast(JSON.stringify({
+                            type: 'kill',
+                            index: deadIndex,
+                            gameCode: gameCode,
+                            currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
+                        }));
+                        
+                        console.log("gg le kill")
+                    }
+                }
+                break;
+            
             default:
                 break;
         }
