@@ -37,6 +37,7 @@
         let generalPlayers = []; // restera la même tout le temps
         let deadPlayers = [];
         let countdownInterval; 
+        let gameEnCours = 1;
     
         console.log('Game code:', gameCode);
         console.log('Username:', username);
@@ -121,6 +122,7 @@
                     }
                     break;
                     case 'multi_win':
+                    gameEnCours = 0;
     if (msg.gameCode === gameCode) {
         const victoryMessage = document.getElementById('victory-message');
         const victoryUsername = document.getElementById('victory-username');
