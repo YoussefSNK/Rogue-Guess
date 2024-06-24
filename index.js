@@ -75,7 +75,7 @@ wss.on('connection', (ws) => {
                 broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
-                if(data.uuid == users[0].uuid){
+                if(data.uuid == users[0].uuid){ // vérifie que c'est le chef
                     const theme = data.theme + ".png";
                     const gameCode = generateGameCode();
                     logController.getSQLByTheme(theme, (err, sqlrequest) => {

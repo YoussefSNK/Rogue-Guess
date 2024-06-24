@@ -307,9 +307,11 @@ function insertInitialData() {
     ("Ziggs", "League of legends", "Ziggs.png"),
     ("Zilean", "League of legends", "Zilean.png"),
     ("Zoé", "League of legends", "Zoé.png"),
-    ("Zyra", "League of legends", "Zyra.png")
-        
-        
+    ("Zyra", "League of legends", "Zyra.png"),
+
+    
+    ("1", "Test", "1.png"),
+    ("2", "Test", "2.png")
     
     ;
   `;
@@ -318,7 +320,7 @@ function insertInitialData() {
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Joueurs de Raimon", "SELECT Name FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
     ("Champions de League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
-    ("azrkadzd", "aozdjiazjdoia", "random.png");
+    ("Valeurs de test", "SELECT Name FROM Entity WHERE Licence = 'Test'", "Les valeurs sont 1 et 2.png");
   `;
 
   db.serialize(() => {
