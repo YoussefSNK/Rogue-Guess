@@ -108,16 +108,16 @@
 #losers-container {
     position: fixed;
     bottom: 0;
-    width: 100%; /* Ajustez la largeur selon vos besoins */
-    background-color: rgba(0, 0, 0, 0.5); /* Fond rouge semi-transparent pour illustrer */
+    width: 100%; /* Largeur de 100% de l'écran */
+    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
     display: flex;
-    justify-content: space-around;
+    justify-content: center; /* Espacement des avatars sur toute la largeur */
     align-items: center;
-    padding: 10px; /* Espacement interne pour les avatars */
+    padding: 10px; /* Espacement interne */
 }
 
 .loser-avatar {
-    width: 100; /* Ajustez la taille des avatars selon vos besoins */
+    width: 100px; /* Taille des avatars avec unité px */
     height: auto;
     margin: 5px; /* Marge autour de chaque avatar */
 }
