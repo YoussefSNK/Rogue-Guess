@@ -151,7 +151,6 @@ wss.on('connection', (ws) => {
                 }
                 break;
             case 'looser':
-                console.log("Cas du looser reçu", data)
                 const gameCode = data.gameCode;
                 const username = data.username;
                 const actualRoom = rooms[gameCode];
@@ -176,7 +175,6 @@ wss.on('connection', (ws) => {
                             loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
                             gameCode: gameCode,
                         }));
-                        console.log("gg la win")
                     }
                     else{
                         broadcast(JSON.stringify({
@@ -185,9 +183,7 @@ wss.on('connection', (ws) => {
                             gameCode: gameCode,
                             currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
                         }));
-                        
-                        console.log("gg le kill")
-                    }
+                        }
                 }
                 break;
             
