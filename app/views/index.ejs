@@ -16,7 +16,7 @@
             <input type="text" id="name" name="name" required>
             <div class="avatar-container">
                 <div class="arrow" id="left-arrow">&#10094;</div>
-                <img class="avatar" id="current-avatar" src="avatar1.png" alt="Avatar">
+                <img class="avatar" id="current-avatar" src="images/avatar/avatar1.png" alt="Avatar">
                 <div class="arrow" id="right-arrow">&#10095;</div>
             </div>
             <label for="game-code">Code de la partie :</label>
@@ -30,7 +30,7 @@
     <script>
         const socket = new WebSocket('ws://localhost:3000');
     
-        const avatars = ['avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png', 'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png', 'avatar9.png'];
+        const avatars = ['images/avatar/avatar1.png', 'images/avatar/avatar2.png', 'images/avatar/avatar3.png', 'images/avatar/avatar4.png', 'images/avatar/avatar5.png', 'images/avatar/avatar6.png', 'images/avatar/avatar7.png', 'images/avatar/avatar8.png', 'images/avatar/avatar9.png'];
         let currentIndex = 0;
         const currentAvatar = document.getElementById('current-avatar');
 
