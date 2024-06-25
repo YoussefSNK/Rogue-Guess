@@ -30,21 +30,40 @@
 
     <script>
         const socket = new WebSocket('ws://localhost:3000');
-    
         const avatars = ['images/avatar/avatar1.png', 'images/avatar/avatar2.png', 'images/avatar/avatar3.png', 'images/avatar/avatar4.png', 'images/avatar/avatar5.png', 'images/avatar/avatar6.png', 'images/avatar/avatar7.png', 'images/avatar/avatar8.png', 'images/avatar/avatar9.png'];
-        let currentIndex = 0;
         const currentAvatar = document.getElementById('current-avatar');
+        let currentIndex = 0;
+
+
+        const storedIndex = localStorage.getItem('currentIndex');
+        if (storedIndex !== null) {
+            currentIndex = parseInt(storedIndex, 10); 
+            console.log("donc ", currentIndex)
+        }
+
+        let avatarElement = document.querySelector('.avatar');
+        avatarElement.src = "images/avatar/avatar" + currentIndex + ".png";
+
+
+        const avatarContainer = document.querySelector('.avatar-container');
+        const nameInput = document.querySelector('.name-input');
+        const bienvenue = document.querySelector('.bienvenue');
+
+        function addFloatAnimation(element) {
+            element.addEventListener('mouseenter', function() {
+                this.style.animation = 'float 3s ease-in-out infinite';
+            });
+            element.addEventListener('mouseleave', function() {
+                this.style.animation = 'none';
+            });
+        }
 
         function changeAvatar(side) {
             currentAvatar.classList.remove('visible');
             currentAvatar.classList.add('hidden');
-            
             setTimeout(() => {
-                if (side === "next") {
-                    currentIndex = (currentIndex + 1) % avatars.length;
-                } else {
-                    currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;
-                }
+                if (side === "next") {currentIndex = (currentIndex + 1) % avatars.length;} 
+                else {currentIndex = (currentIndex - 1 + avatars.length) % avatars.length;}
                 currentAvatar.src = avatars[currentIndex];
                 currentAvatar.classList.remove('hidden');
                 currentAvatar.classList.add('visible');
@@ -52,7 +71,10 @@
         }
 
         window.onload = () => {
-            currentAvatar.classList.add('visible');
+            currentAvatar.classList.add('visible');        
+            addFloatAnimation(avatarContainer);
+            addFloatAnimation(nameInput);
+            addFloatAnimation(bienvenue);
         };
 
         document.getElementById('left-arrow').addEventListener('click', function() {
@@ -75,6 +97,7 @@
             console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
             sessionStorage.setItem('username', name);
             sessionStorage.setItem('avatar', avatar);
+            localStorage.setItem('currentIndex', currentIndex.toString());
             const uuid = uuidv4();
             sessionStorage.setItem('uuid', uuid);
             const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive" };
@@ -94,6 +117,11 @@
             });
         }
 
+
+
+
+
+
         socket.addEventListener('open', function(event) {
             console.log('Connecté au serveur depuis index.ejs');
         });
@@ -106,25 +134,5 @@
             console.error('Error occurred:', event);
         });
 
-        const avatarContainer = document.querySelector('.avatar-container');
-        const nameInput = document.querySelector('.name-input');
-        const bienvenue = document.querySelector('.bienvenue');
-
-        function addFloatAnimation(element) {
-            element.addEventListener('mouseenter', function() {
-                this.style.animation = 'float 3s ease-in-out infinite';
-            });
-            element.addEventListener('mouseleave', function() {
-                this.style.animation = 'none';
-            });
-        }
-
-        addFloatAnimation(avatarContainer);
-        addFloatAnimation(nameInput);
-        addFloatAnimation(bienvenue);
-
-
-
     </script>
-
 </body>
