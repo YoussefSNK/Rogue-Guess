@@ -59,32 +59,41 @@ function generateGameCode() {
 }
 
 let users = [];
+let lobbies = {};
 let rooms = {};
 
 wss.on('connection', (ws) => {
+    
+    logLobbies(lobbies)
     ws.on('message', (message) => {
         const data = JSON.parse(message);
 
         switch (data.type.trim()) {
-            case 'user_info':
-                let user = users.find(user => user.uuid === data.userInfo.uuid);
-                if (!user) {
-                    user = { username: data.userInfo.username, avatar: data.userInfo.avatar, uuid: data.userInfo.uuid, state: data.userInfo.state, ws: ws };
-                    users.push(user);
-                } else {
-                    user.ws = ws; // Mettre à jour la référence WebSocket
-                }
-                broadcastUsers();
+            case 'create_game':
+                handleCreateGame(data.userInfo, ws);
                 break;
+            case 'join_game':
+                handleJoinGame(data.userInfo, ws);
+                break;
+            case 'ask_user_list':
+                sendUserList(ws, data.userInfo.roomCode);
             case 'disconnect_user':
-                users = users.filter(user => user.uuid !== data.uuid);
-                broadcastUsers();
+                if (lobbies[data.roomCode]) {
+                    lobbies[data.roomCode] = lobbies[data.roomCode].filter(user => user.uuid !== data.uuid);
+
+                    // Si la salle est vide après la déconnexion, supprimer la salle
+                    if (lobbies[data.roomCode].length === 0) {
+                        delete lobbies[data.roomCode];
+                    }
+
+                    sendUserList(ws, data.roomCode);
+                }
                 break;
             case 'chat_message':
-                broadcast(JSON.stringify({ type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
+                broadcast(JSON.stringify({ roomCode: data.roomCode, type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
-                if(data.uuid == users[0].uuid){ // vérifie que c'est le chef
+                if (lobbies[data.roomCode].length > 0 && data.uuid == lobbies[data.roomCode][0].uuid) {
                     const theme = data.theme + ".png";
                     const gameCode = generateGameCode();
                     logController.getSQLByTheme(theme, (err, sqlrequest) => {
@@ -98,28 +107,29 @@ wss.on('connection', (ws) => {
                                 return;
                             }
                             rooms[gameCode] = {
-                                users: users.slice(),
+                                users: lobbies[data.roomCode].slice(),
                                 theme: theme,
                                 list: entities,
                                 currentPlayerIndex: 0,
                                 turnEndTime: Date.now() + 5000
                             };
-                            broadcastToRoom(gameCode, JSON.stringify({
+                            broadcastToRoom(data.roomCode, JSON.stringify({
                                 type: 'redirect_game',
                                 gameCode: gameCode,
                                 theme: theme,
-                                users: users
+                                users: lobbies[data.roomCode]
                             }));
-
-                            users = [];
+                            broadcast(JSON.stringify({type: 'redirect_game', gameCode: gameCode, theme: theme, users: lobbies[data.roomCode]}))
+                            lobbies[data.roomCode] = [];
                         });
-                    })
+                    });
                 }
+                else{console.log("Pas le chef")}
 
                 break;
             case 'request_game_users':
                 const roomCode = data.gameCode;
-                const room = rooms[roomCode] || { users: [], theme: '' };
+                let room = rooms[roomCode] || { users: [], theme: '' };
                 ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar, uuid: user.uuid })), theme: room.theme }));
                 break;
             case 'text_update':
@@ -212,6 +222,65 @@ wss.on('error', (error) => {
 });
 
 
+
+
+
+
+
+
+function handleCreateGame(userInfo, ws) {
+    const gameCode = generateGameCode();
+    lobbies[gameCode] = [{ ...userInfo }];
+    ws.send(JSON.stringify({ type: 'game_created', gameCode }));
+    console.log(`Game created with code: ${gameCode}`);
+}
+
+function handleJoinGame(userInfo, ws) {
+    const { gameCode } = userInfo;
+    if (lobbies[gameCode]) {
+        lobbies[gameCode].push({ ...userInfo });
+        ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
+        console.log(`User joined game with code: ${gameCode}`);
+    } else {
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
+    }
+}
+
+
+
+
+
+
+
+
+function sendUserList(ws, roomCode) {
+    if (lobbies[roomCode]) {
+        const users = lobbies[roomCode].map(user => ({ username: user.username, avatar: user.avatar }));
+        broadcast((JSON.stringify({ type: 'user_list', users: users, roomCode: roomCode})))
+        // ws.send(JSON.stringify({ type: 'user_list', users: users }));
+    } else {
+        ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+    }
+    logLobbies(lobbies, "après sendUserList")
+}
+
+
+
+
+
+function logLobbies(lobbies) {
+    Object.keys(lobbies).forEach((roomCode, index) => {
+        const users = lobbies[roomCode];
+        const userList = users.map(user => user.username).join(', ');
+        console.log(`Room ${index + 1} (${roomCode}) : ${userList}`);
+    });
+}
+
+
+
+
+
+
 function check_victory(roomCode){ // vérifie si la game est win, si oui elle return true
     const room = rooms[roomCode];
     const aliveUsers = room.users.filter(user => user.state === "alive");
@@ -233,9 +302,15 @@ function broadcast(message) {
 }
 // Diffuse tous les users
 function broadcastUsers() {
+    console.log("broadcastUsers affiche")
+    console.log("a")
+    logLobbies(lobbies)
     const userListMessage = JSON.stringify({ type: 'user_list', users: users });
     broadcast(userListMessage);
 }
+
+
+
 // à revoir
 function broadcastToRoom(roomCode, message) {
     const room = rooms[roomCode];

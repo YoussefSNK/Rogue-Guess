@@ -30,6 +30,8 @@
         const socket = new WebSocket('ws://localhost:3000');
         const username = sessionStorage.getItem('username');
         const avatar = sessionStorage.getItem('avatar');
+        const uuid = sessionStorage.getItem('uuid');
+        const gameCode = new URLSearchParams(window.location.search).get('gameCode');
 
         function addMessageToUI(msg) {
             const messages = document.getElementById('messages');
@@ -86,8 +88,9 @@
                         imgElement.classList.add('request-image');
                         imgElement.addEventListener('click', () => {
                             socket.send(JSON.stringify({
+                                roomCode: gameCode,
                                 type: 'start_game',
-                                uuid: sessionStorage.getItem('uuid'),
+                                uuid: uuid,
                                 theme: image.Image.replace('.png', '')
                             }));
                         });
@@ -107,9 +110,9 @@
 
         socket.addEventListener('message', function(event) {
             const msg = JSON.parse(event.data);
-            if (msg.type === 'chat_message') {
+            if (msg.type === 'chat_message' && msg.roomCode === gameCode) {
                 addMessageToUI(msg);
-            } else if (msg.type === 'user_list') {
+            } else if (msg.type === 'user_list' && msg.roomCode === gameCode) {
                 updatePlayerList(msg.users);
             } else if (msg.type === 'user_disconnected') {
                 const messages = document.getElementById('messages');
@@ -129,6 +132,7 @@
             const message = input.value.trim();
             if (message !== '') {
                 socket.send(JSON.stringify({
+                    roomCode: gameCode,
                     type: 'chat_message',
                     message: message,
                     username: username,
@@ -141,8 +145,9 @@
         socket.addEventListener('open', function(event) {
             console.log('Connecté au serveur depuis chat.ejs');
             socket.send(JSON.stringify({
-                type: 'user_info',
+                type: 'ask_user_list',
                 userInfo: {
+                    roomCode: gameCode,
                     username: username,
                     avatar: avatar,
                     uuid: sessionStorage.getItem('uuid'),
@@ -151,20 +156,16 @@
             }));
         });
 
-        socket.addEventListener('close', function(event) {
-            console.log('Déconnecté de chat.ejs');
-        });
-
-        const uuid = sessionStorage.getItem('uuid');
-
-        window.addEventListener('beforeunload', function(event) {
-            socket.send(JSON.stringify({
-                type: 'disconnect_user',
-                uuid: uuid,
-                username: username,
-                avatar: avatar
-            }));
-        });
+        socket.addEventListener('close', function(event) {console.log('Déconnecté de chat.ejs');});
+            window.addEventListener('beforeunload', function(event) {
+                socket.send(JSON.stringify({
+                    roomCode: gameCode,
+                    type: 'disconnect_user',
+                    uuid: uuid,
+                    username: username,
+                    avatar: avatar
+                }));
+            });
 
         socket.addEventListener('error', function(event) {
             console.error('Error occurred:', event);

@@ -34,16 +34,64 @@
         const currentAvatar = document.getElementById('current-avatar');
         let currentIndex = 0;
 
-
         const storedIndex = localStorage.getItem('currentIndex');
         if (storedIndex !== null) {
             currentIndex = parseInt(storedIndex, 10); 
-            console.log("donc ", currentIndex)
+        }
+        let avatarElement = document.querySelector('.avatar');
+        currentAvatar.src = `images/avatar/avatar${currentIndex+1}.png`;
+
+        document.getElementById('create-game').addEventListener('click', () => {
+            const name = document.getElementById('name').value.trim();
+            const avatar = avatars[currentIndex];
+            const gameCode = document.getElementById('game-code').value.trim();
+            if (gameCode) {joinGame(name, avatar, gameCode);} 
+            else if (gameCode == "") {createGame(name, avatar);}
+            else {console.log("raté")}
+        });
+    
+        function createGame(name, avatar) {
+            sessionStorage.setItem('username', name);
+            sessionStorage.setItem('avatar', avatar);
+            localStorage.setItem('currentIndex', currentIndex.toString());
+            const uuid = uuidv4();
+            sessionStorage.setItem('uuid', uuid);
+            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive" };
+            socket.send(JSON.stringify({ type: 'create_game', userInfo: userInfo }));
+        }
+    
+        function joinGame(name, avatar, gameCode) {
+            sessionStorage.setItem('username', name);
+            sessionStorage.setItem('avatar', avatar);
+            localStorage.setItem('currentIndex', currentIndex.toString());
+            const uuid = uuidv4();
+            sessionStorage.setItem('uuid', uuid);
+            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive", gameCode: gameCode };
+            socket.send(JSON.stringify({ type: 'join_game', userInfo: userInfo }));
         }
 
-        let avatarElement = document.querySelector('.avatar');
-        avatarElement.src = "images/avatar/avatar" + currentIndex + ".png";
+        socket.addEventListener('message', function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'game_created' || data.type === 'game_joined') {
+                window.location.href = `/chat?gameCode=${encodeURIComponent(data.gameCode)}`;
+            } else if (data.type === 'error') {
+                alert(data.message);
+            }
+        });
 
+        socket.addEventListener('open', function(event) {console.log('Connecté au serveur depuis index.ejs');});
+        //socket.addEventListener('close', function(event) {console.log('Déconnecté d\'index.ejs');});
+        socket.addEventListener('error', function(event) {console.error('Error occurred:', event);});
+        
+        window.onload = () => {
+            currentAvatar.classList.add('visible');        
+            addFloatAnimation(avatarContainer);
+            addFloatAnimation(nameInput);
+            addFloatAnimation(bienvenue);
+        };
+
+        document.getElementById('left-arrow').addEventListener('click', function() {changeAvatar("prev");});
+        document.getElementById('right-arrow').addEventListener('click', function() {changeAvatar("next");});
 
         const avatarContainer = document.querySelector('.avatar-container');
         const nameInput = document.querySelector('.name-input');
@@ -57,7 +105,6 @@
                 this.style.animation = 'none';
             });
         }
-
         function changeAvatar(side) {
             currentAvatar.classList.remove('visible');
             currentAvatar.classList.add('hidden');
@@ -69,46 +116,6 @@
                 currentAvatar.classList.add('visible');
             }, 100);
         }
-
-        window.onload = () => {
-            currentAvatar.classList.add('visible');        
-            addFloatAnimation(avatarContainer);
-            addFloatAnimation(nameInput);
-            addFloatAnimation(bienvenue);
-        };
-
-        document.getElementById('left-arrow').addEventListener('click', function() {
-            changeAvatar("prev");
-        });
-
-        document.getElementById('right-arrow').addEventListener('click', function() {
-            changeAvatar("next");
-        });
-
-        document.getElementById('create-game').addEventListener('click', function(e) {
-            // e.preventDefault();
-            const name = document.getElementById('name').value.trim();
-            const avatar = avatars[currentIndex];
-            const gameCode = document.getElementById('game-code').value.trim();
-            createGame(name, avatar, gameCode);
-        });
-    
-        function createGame(name, avatar, gameCode) {
-            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
-            sessionStorage.setItem('username', name);
-            sessionStorage.setItem('avatar', avatar);
-            localStorage.setItem('currentIndex', currentIndex.toString());
-            const uuid = uuidv4();
-            sessionStorage.setItem('uuid', uuid);
-            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive" };
-            socket.send(JSON.stringify({ type: 'user_info', userInfo: userInfo }));
-            window.location.href = `/chat?gameCode=${encodeURIComponent(gameCode)}`;
-        }
-    
-        function joinGame(name, avatar, gameCode) {
-            console.log(`Nom: ${name}, Avatar: ${avatar}, Code de la partie: ${gameCode}`);
-        }
-
         function uuidv4() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0,
@@ -116,23 +123,6 @@
                 return v.toString(16);
             });
         }
-
-
-
-
-
-
-        socket.addEventListener('open', function(event) {
-            console.log('Connecté au serveur depuis index.ejs');
-        });
-
-        socket.addEventListener('close', function(event) {
-            console.log('Déconnecté d\'index.ejs');
-        });
-
-        socket.addEventListener('error', function(event) {
-            console.error('Error occurred:', event);
-        });
 
     </script>
 </body>
