@@ -11,10 +11,10 @@
 <body>
     <div class="background-ball"></div>
     <div class="container">
-        <h1>Bienvenue</h1>
+        <h1><div class="bienvenue">Bienvenue</div></h1>
         <form>
             <label for="name">Nom :</label>
-            <input type="text" id="name" name="name" required>
+            <input class="name-input" placeholder="Choisissez un nom" type="text" id="name" name="name" required>
             <div class="avatar-container">
                 <div class="arrow" id="left-arrow">&#10094;</div>
                 <img class="avatar" id="current-avatar" src="images/avatar/avatar1.png" alt="Avatar">
@@ -105,6 +105,26 @@
         socket.addEventListener('error', function(event) {
             console.error('Error occurred:', event);
         });
+
+        const avatarContainer = document.querySelector('.avatar-container');
+        const nameInput = document.querySelector('.name-input');
+        const bienvenue = document.querySelector('.bienvenue');
+
+        function addFloatAnimation(element) {
+            element.addEventListener('mouseenter', function() {
+                this.style.animation = 'float 3s ease-in-out infinite';
+            });
+            element.addEventListener('mouseleave', function() {
+                this.style.animation = 'none';
+            });
+        }
+
+        addFloatAnimation(avatarContainer);
+        addFloatAnimation(nameInput);
+        addFloatAnimation(bienvenue);
+
+
+
     </script>
 
 </body>

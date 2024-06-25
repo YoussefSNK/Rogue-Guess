@@ -12,6 +12,8 @@ body {
 
 .container {
     text-align: center;
+    animation: float 10s ease-in-out infinite;
+
 }
 
 h1 {
@@ -112,6 +114,27 @@ input[type="text"] {
 } */
 
 
+
+
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.floating-element {
+    animation: float 3s ease-in-out infinite;
+}
+
+
+
+
+
+/* Les bails par rapport à la balle */
 
 .background-ball {
     position: absolute;
