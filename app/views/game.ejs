@@ -30,6 +30,8 @@
         const gameCode = '<%= gameCode %>';
         const username = sessionStorage.getItem('username');
         const uuid = sessionStorage.getItem('uuid');
+        const avataro = sessionStorage.getItem('avatar');
+
         let currentPlayer = '';
         let angleOffset = 0; // Offset de rotation
         let currentPlayers = [];
@@ -37,6 +39,7 @@
         let deadPlayers = [];
         let countdownInterval;
         let gameEnCours = 1;
+        let parti = 0;
     
         console.log('Game code:', gameCode);
         console.log('Username:', username);
@@ -100,14 +103,10 @@
                         let winnersContainer = document.getElementById('winners-container');
 
                         victoryUsername.innerText = `Victoire de ${msg.username}`;
-
                         let winnerAvatar = document.createElement('img');
                         winnerAvatar.src = msg.avatar;
                         winnerAvatar.classList.add('winner-avatar');
                         winnersContainer.appendChild(winnerAvatar);
-
-
-
 
                         let losersContainer = document.getElementById('losers-container');
                         losersContainer.innerHTML = '';
@@ -120,6 +119,9 @@
 
                         victoryMessage.style.display = 'block';
                         document.querySelector('.container').style.display = 'none';
+                        
+                        const isLeader = msg.chief_uuid === sessionStorage.getItem('uuid');
+                        handlePostVictoryRedirection(isLeader, gameCode, username, sessionStorage.getItem('avatar'), uuid);
                     }
                     break;
                 case 'multi_win':
@@ -151,7 +153,40 @@
                         losersContainer.style.display = 'block';
                         victoryMessage.style.display = 'block';
                         document.querySelector('.container').style.display = 'none';
+
+                        const isLeader = msg.chief_uuid === sessionStorage.getItem('uuid');
+                        handlePostVictoryRedirection(isLeader, gameCode, username, sessionStorage.getItem('avatar'), uuid);
                     }
+                    break;
+                case 'game_created':
+                    parti = 1;
+                    sessionStorage.setItem('newGameCode', msg.gameCode);
+                    window.location.href = `/chat?gameCode=${msg.gameCode}`;
+                    break;
+                case 'game_joinable':
+                    if (!parti){
+                        console.log(msg.oldRoomCode, "==", gameCode, "!=", msg.newRoomCode)
+                        if (msg.oldRoomCode == gameCode){
+                            console.log("Bon destinataire !")
+
+
+                            const userInfo = { username: username, avatar: avataro, uuid: uuid, state: "alive", gameCode: msg.newRoomCode };
+                            console.log(userInfo)
+                            socket.send(JSON.stringify({ type: 'join_game', userInfo: userInfo }));
+
+
+                            window.location.href = `/chat?gameCode=${msg.newRoomCode}`;
+                        }
+
+
+                    }
+                    break;
+                case 'game_created':
+                    window.location.href = `/chat?gameCode=${encodeURIComponent(msg.roomCode)}`;
+                    break;
+
+                case 'game_joined':
+                    window.location.href = `/chat?gameCode=${encodeURIComponent(msg.gameCode)}`;
                     break;
                 default:
                     console.log('Type de message non pris en charge:', msg.type);
@@ -159,9 +194,7 @@
             }
         });
 
-        socket.addEventListener('close', function(event) {
-            console.log('Déconnecté du serveur de jeu');
-        });
+        socket.addEventListener('close', function(event) {console.log('Déconnecté du serveur de jeu');});
 
         document.getElementById('game-input').addEventListener('input', function(e) {
             if (currentPlayer === username) {
@@ -173,7 +206,6 @@
                 }));
             }
         });
-
         document.getElementById('game-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && currentPlayer === username) {
                 socket.send(JSON.stringify({
@@ -184,7 +216,6 @@
                 }));
             }
         });
-
         function startCountdown(seconds) {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
@@ -202,17 +233,13 @@
                 }
             }, 1000);
         }
-
-
         function updateTextInput(text) {document.getElementById('game-input').value = text;}
         function toggleInput(enable) {document.getElementById('game-input').disabled = !enable;}
-
         function addBackgroundImage(text) {
             const img = document.createElement('img');
             img.src = `/images/entity/${text}.png`;
             img.classList.add('background-image');
             document.getElementById('background').appendChild(img);}
-
         function animateRotation(rotationAngle) {
             const startAngle = angleOffset;
             const targetAngle = angleOffset + rotationAngle;
@@ -231,7 +258,6 @@
             }
             requestAnimationFrame(stepAnimation); // Démarrer l'animation
         }
-
         function displayPlayers(players) {
             const container = document.querySelector('.container');
             const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
@@ -253,7 +279,6 @@
                 container.appendChild(avatar);
             });
         }
-
         function handleKill(index) {
             const killedPlayer = generalPlayers[index];
             const playerList = document.getElementById('player-list');
@@ -277,8 +302,19 @@
             }
         }
 
-
-
+        function handlePostVictoryRedirection(isLeader, gameCode, username, avatar, uuid) {
+            console.log("handlePostVictoryRedirection")
+            setTimeout(() => {
+                if (isLeader) {
+                    console.log("isLeader True")
+                    socket.send(JSON.stringify({
+                        type: 'create_game',
+                        userInfo: { username, avatar, uuid, gameCode }
+                    }));
+                } 
+            }, 2000); // 2 sec
+        }
+        
     </script>
 </body>
 </html>

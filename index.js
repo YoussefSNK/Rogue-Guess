@@ -39,6 +39,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/chat', (req, res) => {
+
+    // if (!lobbies[req.query.gameCode]) {
+    //     res.redirect('/');
+    //     return;
+    // }
+
     res.render('chat', { gameCode: req.query.gameCode });
 });
 
@@ -63,8 +69,6 @@ let lobbies = {};
 let rooms = {};
 
 wss.on('connection', (ws) => {
-    
-    logLobbies(lobbies)
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         switch (data.type.trim()) {
@@ -72,10 +76,12 @@ wss.on('connection', (ws) => {
                 handleCreateGame(data.userInfo, ws);
                 break;
             case 'join_game':
+                console.log("join game:", data.userInfo)
                 handleJoinGame(data.userInfo, ws);
                 break;
             case 'ask_user_list':
                 sendUserList(ws, data.userInfo.roomCode);
+                console.log("ask_user_list")
             case 'disconnect_user':
                 if (lobbies[data.roomCode]) {
                     lobbies[data.roomCode] = lobbies[data.roomCode].filter(user => user.uuid !== data.uuid);
@@ -182,6 +188,7 @@ wss.on('connection', (ws) => {
                     
                         broadcast(JSON.stringify({
                             type: 'solo_win',
+                            chief_uuid: actualRoom.users[0].uuid,
                             username: aliveUsers[0].username,
                             avatar: aliveUsers[0].avatar,
                             loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
@@ -214,15 +221,22 @@ wss.on('error', (error) => {
     console.error('Erreur WebSocket Server:', error);
 });
 
+
+
 function handleCreateGame(userInfo, ws) {
     const gameCode = generateGameCode();
-    lobbies[gameCode] = [{ ...userInfo }];
+    lobbies[gameCode] = [{ ...userInfo}];
     ws.send(JSON.stringify({ type: 'game_created', gameCode }));
+
+    broadcast(JSON.stringify({ type: 'game_joinable', newRoomCode: gameCode, oldRoomCode: userInfo.gameCode }))
+
     console.log(`Game created with code: ${gameCode}`);
 }
 
+
 function handleJoinGame(userInfo, ws) {
     const { gameCode } = userInfo;
+    console.log("on va push", userInfo.username, "dans la room", gameCode)
     if (lobbies[gameCode]) {
         lobbies[gameCode].push({ ...userInfo });
         ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
@@ -238,7 +252,6 @@ function handleJoinGame(userInfo, ws) {
 
 
 
-
 function sendUserList(ws, roomCode) {
     if (lobbies[roomCode]) {
         const users = lobbies[roomCode].map(user => ({ username: user.username, avatar: user.avatar }));
@@ -247,7 +260,7 @@ function sendUserList(ws, roomCode) {
     } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
     }
-    logLobbies(lobbies, "après sendUserList")
+    logLobbies(lobbies)
 }
 
 
