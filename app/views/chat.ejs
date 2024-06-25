@@ -121,7 +121,7 @@
                 disconnectMessageElement.textContent = `${msg.username} s'est déconnecté`;
                 messages.appendChild(disconnectMessageElement);
                 messages.scrollTop = messages.scrollHeight;
-            } else if (msg.type === 'redirect_game') {
+            } else if (msg.type === 'redirect_game' && msg.roomCode === gameCode) {
                 window.location.href = `/game?gameCode=${msg.gameCode}`;
             }
         });

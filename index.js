@@ -67,7 +67,6 @@ wss.on('connection', (ws) => {
     logLobbies(lobbies)
     ws.on('message', (message) => {
         const data = JSON.parse(message);
-
         switch (data.type.trim()) {
             case 'create_game':
                 handleCreateGame(data.userInfo, ws);
@@ -113,13 +112,7 @@ wss.on('connection', (ws) => {
                                 currentPlayerIndex: 0,
                                 turnEndTime: Date.now() + 5000
                             };
-                            broadcastToRoom(data.roomCode, JSON.stringify({
-                                type: 'redirect_game',
-                                gameCode: gameCode,
-                                theme: theme,
-                                users: lobbies[data.roomCode]
-                            }));
-                            broadcast(JSON.stringify({type: 'redirect_game', gameCode: gameCode, theme: theme, users: lobbies[data.roomCode]}))
+                            broadcast(JSON.stringify({type: 'redirect_game', gameCode: gameCode, roomCode: data.roomCode, theme: theme, users: lobbies[data.roomCode]}))
                             lobbies[data.roomCode] = [];
                         });
                     });
@@ -221,13 +214,6 @@ wss.on('error', (error) => {
     console.error('Erreur WebSocket Server:', error);
 });
 
-
-
-
-
-
-
-
 function handleCreateGame(userInfo, ws) {
     const gameCode = generateGameCode();
     lobbies[gameCode] = [{ ...userInfo }];
@@ -309,23 +295,6 @@ function broadcastUsers() {
     broadcast(userListMessage);
 }
 
-
-
-// à revoir
-function broadcastToRoom(roomCode, message) {
-    const room = rooms[roomCode];
-    if (room) {
-        room.users.forEach(user => {
-            if (user.ws.readyState === WebSocket.OPEN) {
-                try {
-                    user.ws.send(message);
-                } catch (error) {
-                }
-            }
-        });
-    } else {
-    }
-}
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
