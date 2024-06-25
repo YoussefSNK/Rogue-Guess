@@ -110,3 +110,51 @@ input[type="text"] {
 .btn:hover {
     background-color: #4cae4c;
 } */
+
+
+
+.background-ball {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px; /* Taille initiale de la balle */
+    height: 500px; /* Taille initiale de la balle */
+    border-radius: 50%;
+    animation: color-change 60s linear infinite, size-change 5s ease-in-out infinite;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    filter: blur(50px); /* Ajout du flou */
+}
+
+@keyframes color-change {
+    0% {
+        background-color: rgb(187, 0, 0);
+    }
+    25% {
+        background-color: rgb(197, 197, 0);
+    }
+    50% {
+        background-color: green;
+    }
+    75% {
+        background-color: blue;
+    }
+    100% {
+        background-color: purple;
+    }
+}
+
+@keyframes size-change {
+    0% {
+        width: 650px; 
+        height: 650px; 
+    }
+    90% {
+        width: 5px; 
+        height: 5px; 
+    }
+    100%{
+        width: 650px;
+        height: 650px;
+    }
+}
