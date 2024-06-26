@@ -1,7 +1,7 @@
 # Rogue Guess
 
 ## Introduction
-Ce projet est une application web qui permet aux utilisateurs de jouer ensemble à un jeu. Il utilise Express, Node.js et les Sockets.
+Ce projet est une application web qui permet aux utilisateurs de jouer ensemble à un jeu. Il utilise Express, Node.js et les Sockets. Théoriquement réalisé en suivant le patron de conception MVC.
 
 ## Fonctionnalités
 - Créer un salon privé
@@ -18,7 +18,7 @@ cd Rogue-Guess
 - Installez les dépendances
 npm install
 
-- Démarrer le serveur
+- Démarrer le serveur (avec nodemon)
 npm run dev
 
 
@@ -52,9 +52,6 @@ Pendant la partie
 - Sinon, le joueur est éliminé
 - La partie s'arrête lorsque tous les élements ont été cités ou lorsqu'il ne reste qu'un seul joueur
 - À la fin de la partie, les joueurs sont redirigés vers un nouveau salon
-
-
-
 
 
 Auteur
