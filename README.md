@@ -54,5 +54,12 @@ Pendant la partie
 - À la fin de la partie, les joueurs sont redirigés vers un nouveau salon
 
 
+Fonctionnalités annexes
+- Les éléments citésé sont affichés en arrière plan
+- Le site retient l'avatar de l'utilisateur pour sa prochaine session
+- Pendant la partie, les joueurs sont affichés dans un cercle qui tourne à chaque action
+
+
+
 Auteur
 - [Youssef](https://github.com/YoussefSNK)
