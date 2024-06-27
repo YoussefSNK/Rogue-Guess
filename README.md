@@ -59,7 +59,11 @@ Fonctionnalités annexes
 - Le site retient l'avatar de l'utilisateur pour sa prochaine session
 - Pendant la partie, les joueurs sont affichés dans un cercle qui tourne à chaque action
 
-
+Outils utilisés
+- Outil de versionning : Github
+- Outil de gestion de ticket : Trello
+- Outil de vérification de code (au début du projet) : Sonarqube
+- Conventions de commits pour les commits
 
 Auteur
 - [Youssef](https://github.com/YoussefSNK)
