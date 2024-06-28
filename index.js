@@ -40,13 +40,14 @@ app.get('/', (req, res) => {
 
 app.get('/chat', (req, res) => {
 
-    // if (!lobbies[req.query.gameCode]) {
-    //     res.redirect('/');
-    //     return;
-    // }
+    if (!lobbies[req.query.gameCode]) {
+        res.redirect('/');
+        return;
+    }
 
     res.render('chat', { gameCode: req.query.gameCode });
 });
+
 
 app.get('/formulaire', (req, res) => {res.render('formulaire');});
 app.post('/formulaire', dbController.createFormEntry);
