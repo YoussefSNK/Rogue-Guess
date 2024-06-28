@@ -502,7 +502,7 @@ function insertInitialData() {
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Joueurs de Raimon", "SELECT Name FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
     ("Champions de League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
-    ("Pokémon 1G", "SELECT Name FROM Entity WHERE Licence = 'Pokemon 1G'", "Pokémon.png"),
+    ("Pokémon 1G", "SELECT Name FROM Entity WHERE Licence = 'Pokémon 1G'", "pokemon.png"),
     ("Valeurs de test", "SELECT Name FROM Entity WHERE Licence = 'Test'", "Les valeurs sont 1 et 2.png")
     ;
   `;
