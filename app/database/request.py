@@ -9,15 +9,15 @@ def extract_names_from_json(file_path):
     return names
 
 # Construire le chemin absolu du fichier JSON
-file_path = os.path.join(os.path.dirname(__file__), 'pokemon.json')
+# file_path = os.path.join(os.path.dirname(__file__), 'pokemon.json')
 
-names_list = extract_names_from_json(file_path)
-names_list = sorted(names_list)
+# names_list = extract_names_from_json(file_path)
+# names_list = sorted(names_list)
 # print(names_list)
 
 
-for i in names_list:
-    print(i)
+# for i in names_list:
+#     print(i)
 
 
 def request_maker(list_de_con, theme):
@@ -56,3 +56,55 @@ list2 = ["Kha'Zix", "Kindred", "Kled", "Kog'Maw", "Leblanc",
 # request_maker(list, "Inazuma Eleven")
 
 # request_maker(names_list, "Pokémon 1G")
+
+
+
+
+
+def determine_generation(pokemon_id):
+    if 1 <= pokemon_id <= 151:
+        return 1
+    elif 152 <= pokemon_id <= 251:
+        return 2
+    elif 252 <= pokemon_id <= 386:
+        return 3
+    elif 387 <= pokemon_id <= 493:
+        return 4
+    elif 494 <= pokemon_id <= 649:
+        return 5
+    else:
+        return None
+
+
+
+def process_pokemon_data(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    
+    processed_data = []
+    for item in data:
+        id = item['id']
+        name_french = item['name']['french']
+        name_english = item['name']['english']
+        name_japanese = item['name']['japanese']
+        generation = determine_generation(id)
+        common_value = 'Commun'
+        type1 = item['type'][0] if item['type'] else 'Aucun'
+        type2 = item['type'][1] if len(item['type']) > 1 else 'Aucun'
+        sound_file = f'pokemon/{id}.ogg'
+        
+        if id<650:
+            processed_data.append((
+                f'{name_french}.png', name_french, name_english, name_japanese,
+                generation, common_value, type1, type2, sound_file
+            ))
+    
+    return processed_data
+
+# Construire le chemin absolu du fichier JSON
+file_path = os.path.join(os.path.dirname(__file__), 'pokedex.json')
+
+pokemon_list = process_pokemon_data(file_path)
+for pokemon in pokemon_list:
+    print(pokemon, end='')
+    print(",")
