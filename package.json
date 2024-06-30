@@ -16,6 +16,7 @@
         "socket.io": "^4.7.5",
         "sqlite3": "^5.1.7",
         "uuid": "^9.0.1",
+        "vue-native-websocket-vue3": "^3.1.7",
         "ws": "^8.16.0"
     }
 }

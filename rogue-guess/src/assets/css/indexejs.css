@@ -8,26 +8,25 @@ body {
     height: 100vh;
     background-color: #000;
     color: #fff; /* Changer la couleur du texte en blanc */
-}
-
-.container {
+  }
+  
+  .container {
     text-align: center;
     animation: float 10s ease-in-out infinite;
-
-}
-
-h1 {
+  }
+  
+  h1 {
     margin-bottom: 20px;
     color: #fff; /* Changer la couleur du texte en blanc */
-}
-
-label {
+  }
+  
+  label {
     display: block;
     margin-bottom: 10px;
     color: #fff; /* Changer la couleur du texte en blanc */
-}
-
-input[type="text"] {
+  }
+  
+  input[type="text"] {
     padding: 8px;
     font-size: 16px;
     width: 250px;
@@ -36,49 +35,49 @@ input[type="text"] {
     color: #fff; /* Texte des champs de texte en blanc */
     border: 1px solid #555; /* Bordure des champs de texte en gris foncé */
     border-radius: 5px;
-}
-
-.avatar-container {
+  }
+  
+  .avatar-container {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
-}
-
-.avatar {
+  }
+  
+  .avatar {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     border: 2px solid transparent;
-    transition: border-color 0.3s ease;
-    opacity: 0;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.avatar.visible {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.avatar.hidden {
+    transition: border-color 0.3s ease, opacity 0.5s ease, transform 0.5s ease;
     opacity: 0;
     transform: scale(0.8);
-}
-
-.arrow {
+  }
+  
+  .avatar.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .avatar.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  
+  .arrow {
     font-size: 2rem;
     cursor: pointer;
     user-select: none;
     padding: 0 10px;
     transition: color 0.3s ease;
     color: #fff; /* Changer la couleur des flèches en blanc */
-}
-
-.arrow:hover {
+  }
+  
+  .arrow:hover {
     color: #007BFF; /* Changer la couleur au survol */
-}
-
-.button {
+  }
+  
+  .button {
     padding: 10px 20px;
     font-size: 16px;
     background-color: #007bff;
@@ -87,56 +86,26 @@ input[type="text"] {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
-
-.button:hover {
+  }
+  
+  .button:hover {
     background-color: #0056b3;
-}
-
-/* 
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 20px 0;
-    font-size: 16px;
-    color: #fff;
-    background-color: #5cb85c;
-    border: none;
-    border-radius: 5px;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #4cae4c;
-} */
-
-
-
-
-
-@keyframes float {
+  }
+  
+  @keyframes float {
     0%, 100% {
-        transform: translateY(0);
+      transform: translateY(0);
     }
     50% {
-        transform: translateY(-10px);
+      transform: translateY(-10px);
     }
-}
-
-.floating-element {
+  }
+  
+  .floating-element {
     animation: float 3s ease-in-out infinite;
-}
-
-
-
-
-
-/* Les bails par rapport à la balle */
-
-.background-ball {
+  }
+  
+  .background-ball {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -147,37 +116,37 @@ input[type="text"] {
     transform: translate(-50%, -50%);
     z-index: -1;
     filter: blur(50px); /* Ajout du flou */
-}
-
-@keyframes color-change {
+  }
+  
+  @keyframes color-change {
     0% {
-        background-color: rgb(187, 0, 0);
+      background-color: rgb(187, 0, 0);
     }
     25% {
-        background-color: rgb(197, 197, 0);
+      background-color: rgb(197, 197, 0);
     }
     50% {
-        background-color: green;
+      background-color: green;
     }
     75% {
-        background-color: blue;
+      background-color: blue;
     }
     100% {
-        background-color: purple;
+      background-color: purple;
     }
-}
-
-@keyframes size-change {
+  }
+  
+  @keyframes size-change {
     0% {
-        width: 650px; 
-        height: 650px; 
+      width: 650px;
+      height: 650px;
     }
     90% {
-        width: 5px; 
-        height: 5px; 
+      width: 5px;
+      height: 5px;
     }
     100%{
-        width: 650px;
-        height: 650px;
+      width: 650px;
+      height: 650px;
     }
-}
+  }
