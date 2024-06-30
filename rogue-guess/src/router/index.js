@@ -6,7 +6,8 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomePage
+    component: HomePage,
+    meta: { title: 'Bienvenue😎' }
   },
   {
     path: '/room/:gameCode',
@@ -18,6 +19,11 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || 'AAAAAAAAAA';
+  next();
 });
 
 export default router;
