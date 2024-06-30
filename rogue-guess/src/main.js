@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import VueNativeSock from 'vue-native-websocket-vue3';
+import '@/assets/css/global.css';
 
 const app = createApp(App);
 
