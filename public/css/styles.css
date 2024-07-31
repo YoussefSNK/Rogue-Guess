@@ -1,63 +1,4 @@
-<template>
-    <div class="roomPage">
-        <div class="container">
-            <div class="red" id="image-container"></div>
-            <div class="green">Logs</div>
-            <div class="blue">
-                <div class="chat-container">
-                    <div class="messages" id="messages"></div>
-                    <form id="message-form">
-                        <label for="message-input"></label>
-                        <input type="text" id="message-input" placeholder="Entrez votre message...">
-                        <button type="submit">Envoyer</button>
-                    </form>
-                </div>
-            </div>
-            <div class="yellow">
-                <div id="firstPlayer"></div>
-                <div id="otherPlayers" class="playerList"></div>
-            </div>
-        </div>
-    </div>
-</template>
-
-<script>
-export default {
-  name: 'RoomPage',
-  props: {
-    gameCode: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      userInfo: null,
-      messages: []
-    };
-  },
-  mounted() {
-    this.$socket.addEventListener('message', this.handleSocketMessage);
-    this.$socket.send(JSON.stringify({ type: 'get_user_info', gameCode: this.gameCode }));
-  },
-  methods: {
-    handleSocketMessage(event) {
-      const data = JSON.parse(event.data);
-      if (data.type === 'user_info') {
-        this.userInfo = data.userInfo;
-      } else if (data.type === 'new_message') {
-        this.messages.push(data.message);
-      }
-    }
-  },
-  beforeUnmount() {
-    this.$socket.removeEventListener('message', this.handleSocketMessage);
-  }
-};
-</script>
-
-<style scoped>
-.roomPage {
+body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
@@ -81,6 +22,8 @@ export default {
         transform: translateY(0);
     }
 }
+
+
 
 .chat-container {
     display: flex;
@@ -171,7 +114,7 @@ export default {
     background-color: #34495e;
 }
 
-.roomPage {
+body {
     margin: 0;
     display: flex;
     justify-content: center;
@@ -234,6 +177,7 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap; /* Empêche le débordement de texte */
 }
+
 
 .green {
     grid-column: 1 / 1;
@@ -303,6 +247,7 @@ export default {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
+
 #firstPlayer {
     display: flex;
     align-items: center;
@@ -331,5 +276,3 @@ export default {
     width: 100%;
     height: auto;
 }
-
-</style>

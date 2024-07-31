@@ -12,7 +12,9 @@ const routes = [
   {
     path: '/room/:gameCode',
     name: 'Room',
-    component: RoomPage
+    component: RoomPage,
+    meta: { title: 'Lobby de con' },
+    props: true,
   }
 ];
 

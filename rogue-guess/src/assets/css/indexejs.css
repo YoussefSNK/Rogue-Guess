@@ -118,7 +118,7 @@ body {
     filter: blur(50px); /* Ajout du flou */
   }
   
-  @keyframes color-change {
+  /* @keyframes color-change {
     0% {
       background-color: rgb(187, 0, 0);
     }
@@ -134,7 +134,7 @@ body {
     100% {
       background-color: purple;
     }
-  }
+  } */
   
   @keyframes size-change {
     0% {

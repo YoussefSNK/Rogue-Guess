@@ -52,14 +52,12 @@ app.get('/chat', (req, res) => {
 app.get('/formulaire', (req, res) => {res.render('formulaire');});
 app.post('/formulaire', dbController.createFormEntry);
 
-
 app.get('/game', (req, res) => {
     res.render('game', { gameCode: req.query.gameCode });
 });
 
 app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
-
 
 function generateGameCode() {
     return crypto.randomBytes(3).toString('hex');
@@ -77,13 +75,51 @@ wss.on('connection', (ws) => {
                 data.userInfo.ws = ws;
                 handleCreateGame(data.userInfo, ws);
                 break;
+
+
+
+
+
+            case 'ask_user_list':
+                sendUserList(ws, data.userInfo.roomCode);
+                console.log("ask_user_list")
+
+
+
+                
+
+            case 'chat_message':
+                broadcast(JSON.stringify({ roomCode: data.roomCode, type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
+                break;
+
+
+
+
+
+
+
+
+
+
+
             case 'join_game':
                 console.log("join game:", data.userInfo)
                 handleJoinGame(data.userInfo, ws);
                 break;
-            case 'ask_user_list':
-                sendUserList(ws, data.userInfo.roomCode);
-                console.log("ask_user_list")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             case 'disconnect_user':
                 if (lobbies[data.roomCode]) {
                     lobbies[data.roomCode] = lobbies[data.roomCode].filter(user => user.uuid !== data.uuid);
@@ -95,9 +131,6 @@ wss.on('connection', (ws) => {
 
                     sendUserList(ws, data.roomCode);
                 }
-                break;
-            case 'chat_message':
-                broadcast(JSON.stringify({ roomCode: data.roomCode, type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
                 break;
             case 'start_game':
                 if (lobbies[data.roomCode].length > 0 && data.uuid == lobbies[data.roomCode][0].uuid) {
@@ -128,7 +161,49 @@ wss.on('connection', (ws) => {
                 else{console.log("Pas le chef")}
 
                 break;
+            case 'request_game_users':
+                const roomCode = data.gameCode;
+                let room = rooms[roomCode] || { users: [], theme: '' };
+                ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar, uuid: user.uuid })), theme: room.theme }));
+                break;
+            case 'text_update':
+                broadcast(JSON.stringify({ type: 'text_update', text: data.text, username: data.username, gameCode: data.gameCode }));
+                break;
+            case 'send_answer':
+                const currentRoom = rooms[data.gameCode];
+                if (currentRoom) {
+                    currentRoom.list.forEach((entity, index) => {
+                        if (entity == data.text){
+                            currentRoom.list = currentRoom.list.filter(entity => entity !== data.text);
+                            if (currentRoom.list.length === 0){ // si la liste des trucs à deviner est vide
+                                let aliveUsers = currentRoom.users.filter(user => user.state === "alive");
+                                let deadUsers = currentRoom.users.filter(user => user.state === "dead");
+                                broadcast(JSON.stringify({
+                                    type: 'multi_win',
+                                    username: aliveUsers.map(user => user.username),
+                                    winnerAvatars: aliveUsers.map(user => user.avatar),
+                                    loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
+                                    gameCode: data.gameCode,
+                            }));}
+                            else{
+                                do {
+                                    currentRoom.currentPlayerIndex = (currentRoom.currentPlayerIndex + 1) % currentRoom.users.length;
+                                } while (currentRoom.users[currentRoom.currentPlayerIndex].state == "dead");
 
+                                currentRoom.currentPlayer = currentRoom.users[currentRoom.currentPlayerIndex].username;            
+                                const turnUpdateMessage = JSON.stringify({
+                                    type: 'turn_success',
+                                    text: data.text,
+                                    currentPlayer: currentRoom.currentPlayer,
+                                    gameCode: data.gameCode,
+                                });
+                                broadcast(turnUpdateMessage);
+                }}});
+                } else {
+                    console.log(`Aucune room trouvée pour le gameCode: ${data.gameCode}`);
+                }
+                break;
+            case 'looser':
                 const gameCode = data.gameCode;
                 const username = data.username;
                 const actualRoom = rooms[gameCode];

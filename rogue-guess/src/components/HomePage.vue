@@ -21,8 +21,6 @@
 </template>
 
 <script>
-// import '@/assets/css/indexejs.css';
-
 import avatar1 from '@/assets/images/avatar/avatar1.png';
 import avatar2 from '@/assets/images/avatar/avatar2.png';
 import avatar3 from '@/assets/images/avatar/avatar3.png';
@@ -49,13 +47,13 @@ export default {
         { src: avatar6, firstColor: '#b4e61d' },
         { src: avatar7, firstColor: '#fff200' },
         { src: avatar8, firstColor: '#7092be' },
-        { src: avatar9, firstColor: '#ff7f27', secondColor: '#6c2c6c', thirdColor: '#a44ca4' }
+        { src: avatar9, firstColor: '#ff7f27', secondColor: '#6c2c6c', thirdColor: '#a44ca4' } // Plus de couleurs car c'est Sir Dson
       ],
       isVisible: true,
     };
   },
   computed: {
-    currentAvatar() {
+    currentAvatar() { // actualise les couleurs en fonction de l'avatar possédé
       return {
         src: this.avatars[this.currentIndex].src,
         firstColor: this.avatars[this.currentIndex].firstColor,
