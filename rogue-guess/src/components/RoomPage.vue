@@ -45,7 +45,7 @@ export default {
       const data = JSON.parse(event.data);
       if (data.type === 'user_info') {
         this.userInfo = data.userInfo;
-      } else if (data.type === 'new_message') {
+      } else if (data.type === 'chat_message') {
         this.messages.push(data.message);
       }
     }
