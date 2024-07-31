@@ -33,12 +33,24 @@ export default {
   data() {
     return {
       userInfo: null,
-      messages: []
+      messages: [],
+      players: null // Ajouté pour stocker les informations des joueurs
     };
   },
   mounted() {
+    this.$socket.addEventListener('open', () => {
+      console.log('WebSocket connection opened');
+    });
+
+    this.$socket.addEventListener('close', () => {
+      console.log('WebSocket connection closed');
+    });
+
     this.$socket.addEventListener('message', this.handleSocketMessage);
-    this.$socket.send(JSON.stringify({ type: 'get_user_info', gameCode: this.gameCode }));
+
+    const askPlayersMessage = JSON.stringify({ type: 'ask_players', gameCode: this.gameCode });
+    console.log('Envoi de ask_players:', askPlayersMessage);
+    this.$socket.send(askPlayersMessage);
   },
   methods: {
     handleSocketMessage(event) {
@@ -47,6 +59,19 @@ export default {
         this.userInfo = data.userInfo;
       } else if (data.type === 'chat_message') {
         this.messages.push(data.message);
+      } else if (data.type === 'asked_players') { // Ajouté pour gérer la réception de la socket "asked_players"
+        this.players = data.players;
+        this.displayPlayers();
+      }
+    },
+    displayPlayers() { // Ajouté pour afficher les informations des joueurs dans la div jaune
+      const firstPlayerDiv = document.getElementById('firstPlayer');
+      const otherPlayersDiv = document.getElementById('otherPlayers');
+
+      if (this.players && this.players.length > 0) {
+        const [firstPlayer, ...otherPlayers] = this.players; // Utilisation de la déstructuration
+        firstPlayerDiv.textContent = firstPlayer; // Afficher le premier joueur
+        otherPlayersDiv.textContent = otherPlayers.join(', '); // Afficher les autres joueurs
       }
     }
   },
