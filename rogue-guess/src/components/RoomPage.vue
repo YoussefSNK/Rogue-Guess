@@ -321,7 +321,7 @@ export default {
     border-radius: 15%;
 }
 
-.player img {
+:deep(.player img) {
     border-radius: 15%;
     margin-bottom: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
