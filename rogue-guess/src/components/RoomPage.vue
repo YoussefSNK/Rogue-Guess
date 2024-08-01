@@ -34,14 +34,14 @@ export default {
     return {
       userInfo: null,
       messages: [],
-      players: null // Ajouté pour stocker les informations des joueurs
+      players: [] // Mise à jour pour stocker la liste des joueurs
     };
   },
   mounted() {
     this.$socket.addEventListener('message', this.handleSocketMessage);
     this.$socket.send(JSON.stringify({ type: 'get_user_info', gameCode: this.gameCode }));
     const askPlayersMessage = JSON.stringify({ type: 'ask_players', gameCode: this.gameCode });
-    console.log('Envoi de ask_players:', askPlayersMessage); // Ajouté pour vérifier l'envoi
+    console.log('Envoi de ask_players:', askPlayersMessage);
     this.$socket.send(askPlayersMessage);
   },
   methods: {
@@ -51,19 +51,39 @@ export default {
         this.userInfo = data.userInfo;
       } else if (data.type === 'chat_message') {
         this.messages.push(data.message);
-      } else if (data.type === 'asked_players') { // Ajouté pour gérer la réception de la socket "asked_players"
+      } else if (data.type === 'asked_players') {
         this.players = data.players;
         this.displayPlayers();
       }
     },
-    displayPlayers() { // Ajouté pour afficher les informations des joueurs dans la div jaune
+    displayPlayers() {
       const firstPlayerDiv = document.getElementById('firstPlayer');
       const otherPlayersDiv = document.getElementById('otherPlayers');
 
+      // Vider les conteneurs existants
+      firstPlayerDiv.innerHTML = '';
+      otherPlayersDiv.innerHTML = '';
+
       if (this.players && this.players.length > 0) {
-        const [firstPlayer, ...otherPlayers] = this.players; // Utilisation de la déstructuration
-        firstPlayerDiv.textContent = firstPlayer; // Afficher le premier joueur
-        otherPlayersDiv.textContent = otherPlayers.join(', '); // Afficher les autres joueurs
+        // Gérer le premier joueur
+        const firstUser = this.players[0];
+        const firstPlayerElement = document.createElement('div');
+        firstPlayerElement.classList.add('player');
+        firstPlayerElement.innerHTML = `
+          <img src="${firstUser.avatar}" alt="Avatar">
+          <div>${firstUser.username}</div>`;
+        firstPlayerDiv.appendChild(firstPlayerElement);
+
+        // Gérer les autres joueurs
+        const otherUsers = this.players.slice(1);
+        otherUsers.forEach(user => {
+          const playerElement = document.createElement('div');
+          playerElement.classList.add('player');
+          playerElement.innerHTML = `
+            <img src="${user.avatar}" alt="Avatar">
+            <div>${user.username}</div>`;
+          otherPlayersDiv.appendChild(playerElement);
+        });
       }
     }
   },

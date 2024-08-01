@@ -91,7 +91,6 @@ wss.on('connection', (ws) => {
 
 
     ws.on('close', () => {
-        // Trouver le lobby et l'utilisateur déconnecté
         let lobbyCode = null;
         let playerIndex = -1;
 
@@ -109,20 +108,12 @@ wss.on('connection', (ws) => {
             // Supprimer le joueur du lobby
             lobbies[lobbyCode].splice(playerIndex, 1);
 
-            // Envoyer la liste mise à jour des joueurs à tous les utilisateurs restants dans le lobby
-            const remainingPlayers = lobbies[lobbyCode].map(player => player.username);
-            const message = JSON.stringify({
-                type: 'asked_players',
-                players: remainingPlayers
-            });
-
-            lobbies[lobbyCode].forEach(player => {
-                player.ws.send(message);
-            });
-
             // Si le lobby est vide, on peut éventuellement le supprimer
             if (lobbies[lobbyCode].length === 0) {
                 delete lobbies[lobbyCode];
+            } else {
+                // Utiliser handleAskPlayers pour envoyer la mise à jour des joueurs restants
+                handleAskPlayers({ gameCode: lobbyCode }, ws);
             }
         }
     });
@@ -158,12 +149,20 @@ function handleJoinGame(userInfo, ws) {
 function handleAskPlayers(data, ws) {
     const gameCode = data.gameCode;
     const lobby = lobbies[gameCode];
+    
     if (lobby) {
-        const playerNames = lobby.map(player => player.username);
+        // On récupère l'information complète de chaque joueur dans le lobby
+        const playersInfo = lobby.map(player => ({
+            username: player.username,
+            avatar: player.avatar
+        }));
+
         const message = JSON.stringify({
             type: 'asked_players',
-            players: playerNames
+            players: playersInfo // Envoyer les objets complets des joueurs
         });
+
+        // Envoyer le message à tous les utilisateurs du lobby
         lobby.forEach(player => {
             player.ws.send(message);
         });
@@ -174,6 +173,7 @@ function handleAskPlayers(data, ws) {
         }));
     }
 }
+
 
 
 
