@@ -29,48 +29,8 @@
 
 
     <script>
-        document.getElementById('create-game').addEventListener('click', () => {
-            const name = document.getElementById('name').value.trim();
-            const avatar = avatars[currentIndex];
-            const gameCode = document.getElementById('game-code').value.trim();
-            if (gameCode) {joinGame(name, avatar, gameCode);} 
-            else if (gameCode == "") {createGame(name, avatar);}
-            else {console.log("raté")}
-        });
-    
-        function createGame(name, avatar) {
-            sessionStorage.setItem('username', name);
-            sessionStorage.setItem('avatar', avatar);
-            localStorage.setItem('currentIndex', currentIndex.toString());
-            const uuid = uuidv4();
-            sessionStorage.setItem('uuid', uuid);
-            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive" };
-            socket.send(JSON.stringify({ type: 'create_game', userInfo: userInfo }));
-        }
-    
-        function joinGame(name, avatar, gameCode) {
-            sessionStorage.setItem('username', name);
-            sessionStorage.setItem('avatar', avatar);
-            localStorage.setItem('currentIndex', currentIndex.toString());
-            const uuid = uuidv4();
-            sessionStorage.setItem('uuid', uuid);
-            const userInfo = { username: name, avatar: avatar, uuid: uuid, state: "alive", gameCode: gameCode };
-            socket.send(JSON.stringify({ type: 'join_game', userInfo: userInfo }));
-        }
-
-        socket.addEventListener('message', function(event) {
-            const data = JSON.parse(event.data);
-            if (data.type === 'game_created' || data.type === 'game_joined') {
-                window.location.href = `/chat?gameCode=${encodeURIComponent(data.gameCode)}`;
-            } else if (data.type === 'error') {
-                alert(data.message);
-            }
-        });
-
         socket.addEventListener('open', function(event) {console.log('Connecté au serveur depuis index.ejs');});
         socket.addEventListener('close', function(event) {console.log('Déconnecté d\'index.ejs');});
         socket.addEventListener('error', function(event) {console.error('Error occurred:', event);});
-        
-
     </script>
 </body>

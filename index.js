@@ -72,18 +72,15 @@ wss.on('connection', (ws) => {
                 data.userInfo.ws = ws;
                 handleCreateGame(data.userInfo, ws);
                 break;
-
             case 'join_game':
-                console.log("join game:", data.userInfo)
+                data.userInfo.ws = ws;
                 handleJoinGame(data.userInfo, ws);
                 break;
-
-
+                
             case 'chat_message':
                 console.log("Chat_Message !");
                 handleChatMessage(data, ws);
                 break;
-
             case 'ask_players':
                 console.log('ask_players reçue'); // Ajouté pour vérifier la réception de ask_players
                 handleAskPlayers(data, ws);
@@ -128,6 +125,36 @@ function handleJoinGame(userInfo, ws) {
     }
 }
 
+// diffuse la liste des joueurs d'un lobby à tous ses joueurs
+function handleAskPlayers(data, ws) {
+    const gameCode = data.gameCode;
+    const lobby = lobbies[gameCode];
+    if (lobby) {
+        const playerNames = lobby.map(player => player.username);
+        const message = JSON.stringify({
+            type: 'asked_players',
+            players: playerNames
+        });
+        lobby.forEach(player => {
+            player.ws.send(message);
+        });
+    } else {
+        ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Lobby not found'
+        }));
+    }
+}
+
+
+
+
+
+
+
+
+
+
 function handleChatMessage(data, ws) {
     const { roomCode, message, username, avatar } = data;
     const lobby = lobbies[roomCode];
@@ -145,23 +172,7 @@ function handleChatMessage(data, ws) {
         });
     }
 }
-function handleAskPlayers(data, ws) {
-    const gameCode = data.gameCode;
-    const lobby = lobbies[gameCode];
-    
-    if (lobby) {
-        const playerNames = lobby.map(player => player.username);
-        ws.send(JSON.stringify({
-            type: 'asked_players',
-            players: playerNames
-        }));
-    } else {
-        ws.send(JSON.stringify({
-            type: 'error',
-            message: 'Lobby not found'
-        }));
-    }
-}
+
 
 
 
