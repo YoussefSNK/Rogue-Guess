@@ -56,17 +56,17 @@ app.get('/game', (req, res) => {res.render('game', { gameCode: req.query.gameCod
 app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
 
+// let rooms = {};
 
 
 let users = [];
 let lobbies = {};
-let rooms = {};
 
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
 
         const data = JSON.parse(message);
-        console.log('Message reçu (parsed):', data); // Ajouté pour vérifier le message parsé
+        // console.log('Message reçu (parsed):', data);
         switch (data.type.trim()) {
             case 'create_game':
                 data.userInfo.ws = ws;
@@ -76,16 +76,12 @@ wss.on('connection', (ws) => {
                 data.userInfo.ws = ws;
                 handleJoinGame(data.userInfo, ws);
                 break;
-                
             case 'chat_message':
-                console.log("Chat_Message !");
                 handleChatMessage(data, ws);
                 break;
             case 'ask_players':
-                console.log('ask_players reçue'); // Ajouté pour vérifier la réception de ask_players
                 handleAskPlayers(data, ws);
                 break;
-
             default:
                 console.log('Type de message inconnu:', data.type);
                 break;
@@ -93,9 +89,42 @@ wss.on('connection', (ws) => {
 
     });
 
+
     ws.on('close', () => {
-        users = users.filter(user => user.ws !== ws);
-        broadcastUsers();
+        // Trouver le lobby et l'utilisateur déconnecté
+        let lobbyCode = null;
+        let playerIndex = -1;
+
+        // Parcours des lobbies pour trouver l'utilisateur déconnecté
+        for (const code in lobbies) {
+            const index = lobbies[code].findIndex(player => player.ws === ws);
+            if (index !== -1) {
+                lobbyCode = code;
+                playerIndex = index;
+                break;
+            }
+        }
+
+        if (lobbyCode !== null && playerIndex !== -1) {
+            // Supprimer le joueur du lobby
+            lobbies[lobbyCode].splice(playerIndex, 1);
+
+            // Envoyer la liste mise à jour des joueurs à tous les utilisateurs restants dans le lobby
+            const remainingPlayers = lobbies[lobbyCode].map(player => player.username);
+            const message = JSON.stringify({
+                type: 'asked_players',
+                players: remainingPlayers
+            });
+
+            lobbies[lobbyCode].forEach(player => {
+                player.ws.send(message);
+            });
+
+            // Si le lobby est vide, on peut éventuellement le supprimer
+            if (lobbies[lobbyCode].length === 0) {
+                delete lobbies[lobbyCode];
+            }
+        }
     });
 
     ws.on('error', (error) => {
@@ -111,18 +140,18 @@ function handleCreateGame(userInfo, ws) {
     const gameCode = generateGameCode();
     lobbies[gameCode] = [{ ...userInfo}];
     ws.send(JSON.stringify({ type: 'game_created', gameCode }));
-    console.log(`Game created with codesss: ${gameCode}`);
+    console.log(`Game created with code: ${gameCode}`);
+    console.log(lobbies)
 }
 function handleJoinGame(userInfo, ws) {
     const { gameCode } = userInfo;
-    console.log("on va push", userInfo.username, "dans la room", gameCode)
     if (lobbies[gameCode]) {
         lobbies[gameCode].push({ ...userInfo });
         ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
-        console.log(`User joined game with code: ${gameCode}`);
     } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
     }
+    console.log(lobbies)
 }
 
 // diffuse la liste des joueurs d'un lobby à tous ses joueurs
