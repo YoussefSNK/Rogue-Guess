@@ -38,18 +38,10 @@ export default {
     };
   },
   mounted() {
-    this.$socket.addEventListener('open', () => {
-      console.log('WebSocket connection opened');
-    });
-
-    this.$socket.addEventListener('close', () => {
-      console.log('WebSocket connection closed');
-    });
-
     this.$socket.addEventListener('message', this.handleSocketMessage);
-
+    this.$socket.send(JSON.stringify({ type: 'get_user_info', gameCode: this.gameCode }));
     const askPlayersMessage = JSON.stringify({ type: 'ask_players', gameCode: this.gameCode });
-    console.log('Envoi de ask_players:', askPlayersMessage);
+    console.log('Envoi de ask_players:', askPlayersMessage); // Ajouté pour vérifier l'envoi
     this.$socket.send(askPlayersMessage);
   },
   methods: {

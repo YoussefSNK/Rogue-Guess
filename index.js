@@ -73,6 +73,12 @@ wss.on('connection', (ws) => {
                 handleCreateGame(data.userInfo, ws);
                 break;
 
+            case 'join_game':
+                console.log("join game:", data.userInfo)
+                handleJoinGame(data.userInfo, ws);
+                break;
+
+
             case 'chat_message':
                 console.log("Chat_Message !");
                 handleChatMessage(data, ws);
@@ -110,6 +116,18 @@ function handleCreateGame(userInfo, ws) {
     ws.send(JSON.stringify({ type: 'game_created', gameCode }));
     console.log(`Game created with codesss: ${gameCode}`);
 }
+function handleJoinGame(userInfo, ws) {
+    const { gameCode } = userInfo;
+    console.log("on va push", userInfo.username, "dans la room", gameCode)
+    if (lobbies[gameCode]) {
+        lobbies[gameCode].push({ ...userInfo });
+        ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
+        console.log(`User joined game with code: ${gameCode}`);
+    } else {
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
+    }
+}
+
 function handleChatMessage(data, ws) {
     const { roomCode, message, username, avatar } = data;
     const lobby = lobbies[roomCode];
@@ -165,10 +183,7 @@ function handleAskPlayers(data, ws) {
             //     broadcast(JSON.stringify({ roomCode: data.roomCode, type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
             //     break;
 
-            // case 'join_game':
-            //     console.log("join game:", data.userInfo)
-            //     handleJoinGame(data.userInfo, ws);
-            //     break;
+
 
             // case 'disconnect_user':
             //     if (lobbies[data.roomCode]) {
@@ -298,17 +313,6 @@ wss.on('error', (error) => {
 
 
 
-function handleJoinGame(userInfo, ws) {
-    const { gameCode } = userInfo;
-    console.log("on va push", userInfo.username, "dans la room", gameCode)
-    if (lobbies[gameCode]) {
-        lobbies[gameCode].push({ ...userInfo });
-        ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
-        console.log(`User joined game with code: ${gameCode}`);
-    } else {
-        ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
-    }
-}
 
 
 

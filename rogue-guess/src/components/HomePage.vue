@@ -71,8 +71,13 @@ export default {
       }
     },
     createGame() {
+      // localStorage.setItem('currentIndex', currentIndex.toString());
       const userInfo = { username: this.name, avatar: this.currentAvatar.src, uuid: this.uuidv4(), state: 'alive' };
       this.$socket.send(JSON.stringify({ type: 'create_game', userInfo }));
+    },
+    joinGame() {
+      const userInfo = { username: this.name, avatar: this.currentAvatar.src, uuid: this.uuidv4(), state: 'alive', gameCode: this.gameCode };
+      this.$socket.send(JSON.stringify({ type: 'join_game', userInfo }));
     },
     changeAvatar(direction) {
       this.isVisible = false;
@@ -112,9 +117,6 @@ export default {
         this.$router.push({ name: 'Room', params: { gameCode } });
       }
     });
-    // this.$socket.addEventListener('open', event => {console.log('Connecté au serveur depuis index.ejs');});
-    // this.$socket.addEventListener('close', event => {console.log('Déconnecté d\'index.ejs');});
-    // this.$socket.addEventListener('error', function(event) {console.error('Error occurred:', event);});
   }
 };
 </script>

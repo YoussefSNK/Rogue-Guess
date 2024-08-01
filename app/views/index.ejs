@@ -29,17 +29,6 @@
 
 
     <script>
-        const socket = new WebSocket('ws://localhost:3000');
-        const currentAvatar = document.getElementById('current-avatar');
-        let currentIndex = 0;
-
-        const storedIndex = localStorage.getItem('currentIndex');
-        if (storedIndex !== null) {
-            currentIndex = parseInt(storedIndex, 10); 
-        }
-        let avatarElement = document.querySelector('.avatar');
-        currentAvatar.src = `images/avatar/avatar${currentIndex+1}.png`;
-
         document.getElementById('create-game').addEventListener('click', () => {
             const name = document.getElementById('name').value.trim();
             const avatar = avatars[currentIndex];
