@@ -84,6 +84,42 @@ wss.on('connection', (ws) => {
             case 'ask_players':
                 handleAskPlayers(data, ws);
                 break;
+
+            case 'hello':
+                console.log("hello !!!", data.title)
+                break;
+
+            // case 'start_game':
+            //     if (lobbies[data.roomCode].length > 0 && data.uuid == lobbies[data.roomCode][0].uuid) {
+            //         const theme = data.theme + ".png";
+            //         const gameCode = generateGameCode();
+            //         logController.getSQLByTheme(theme, (err, sqlrequest) => {
+            //             if (err){
+            //                 console.error('Erreur lors de la récupération des entités:', err);
+            //                 return;
+            //             }
+            //             logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
+            //                 if (err) {
+            //                     console.error('Erreur lors de la récupération des entités:', err);
+            //                     return;
+            //                 }
+            //                 rooms[gameCode] = {
+            //                     users: lobbies[data.roomCode].slice(),
+            //                     theme: theme,
+            //                     list: entities,
+            //                     currentPlayerIndex: 0,
+            //                     turnEndTime: Date.now() + 5000
+            //                 };
+            //                 broadcast(JSON.stringify({type: 'redirect_game', gameCode: gameCode, roomCode: data.roomCode, theme: theme, users: lobbies[data.roomCode]}))
+            //                 lobbies[data.roomCode] = [];
+            //             });
+            //         });
+            //     }
+            //     else{console.log("Pas le chef")}
+
+            //     break;
+
+
             default:
                 console.log('Type de message inconnu:', data.type);
                 break;
@@ -114,7 +150,6 @@ wss.on('connection', (ws) => {
             if (lobbies[lobbyCode].length === 0) {
                 delete lobbies[lobbyCode];
             } else {
-                // Utiliser handleAskPlayers pour envoyer la mise à jour des joueurs restants
                 handleAskPlayers({ gameCode: lobbyCode }, ws);
             }
         }
@@ -210,44 +245,6 @@ function handleChatMessage(msg, ws) {
 
 
 
-// function handleChatMessage(data, ws) {
-//     const { roomCode, message, username, avatar } = data;
-//     const lobby = lobbies[roomCode];
-//     if (lobby) {
-//         const chatMessage = {
-//             type: 'chat_message',
-//             message,
-//             username,
-//             avatar
-//         };
-//         lobby.forEach(user => {
-//             if (user.ws && user.ws.readyState === WebSocket.OPEN) {
-//                 user.ws.send(JSON.stringify(chatMessage));
-//             }
-//         });
-//     }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // case 'ask_user_list':
-            //     sendUserList(ws, data.userInfo.roomCode);
-            //     console.log("ask_user_list")
-
-            // case 'chat_message':
-            //     console.log("Message de fou :", data.message)
-            //     broadcast(JSON.stringify({ roomCode: data.roomCode, type: 'chat_message', message: data.message, avatar: data.avatar, username: data.username }));
-            //     break;
 
 
 
@@ -263,35 +260,7 @@ function handleChatMessage(msg, ws) {
             //         sendUserList(ws, data.roomCode);
             //     }
             //     break;
-            // case 'start_game':
-            //     if (lobbies[data.roomCode].length > 0 && data.uuid == lobbies[data.roomCode][0].uuid) {
-            //         const theme = data.theme + ".png";
-            //         const gameCode = generateGameCode();
-            //         logController.getSQLByTheme(theme, (err, sqlrequest) => {
-            //             if (err){
-            //                 console.error('Erreur lors de la récupération des entités:', err);
-            //                 return;
-            //             }
-            //             logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
-            //                 if (err) {
-            //                     console.error('Erreur lors de la récupération des entités:', err);
-            //                     return;
-            //                 }
-            //                 rooms[gameCode] = {
-            //                     users: lobbies[data.roomCode].slice(),
-            //                     theme: theme,
-            //                     list: entities,
-            //                     currentPlayerIndex: 0,
-            //                     turnEndTime: Date.now() + 5000
-            //                 };
-            //                 broadcast(JSON.stringify({type: 'redirect_game', gameCode: gameCode, roomCode: data.roomCode, theme: theme, users: lobbies[data.roomCode]}))
-            //                 lobbies[data.roomCode] = [];
-            //             });
-            //         });
-            //     }
-            //     else{console.log("Pas le chef")}
 
-            //     break;
             // case 'request_game_users':
             //     const roomCode = data.gameCode;
             //     let room = rooms[roomCode] || { users: [], theme: '' };
@@ -386,17 +355,6 @@ wss.on('error', (error) => {
 
 
 
-function sendUserList(ws, roomCode) {
-    if (lobbies[roomCode]) {
-        const users = lobbies[roomCode].map(user => ({ username: user.username, avatar: user.avatar }));
-        broadcast((JSON.stringify({ type: 'user_list', users: users, roomCode: roomCode})))
-        // ws.send(JSON.stringify({ type: 'user_list', users: users }));
-    } else {
-        ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
-    }
-    logLobbies(lobbies)
-}
-
 
 
 
@@ -425,23 +383,6 @@ function check_victory(roomCode){ // vérifie si la game est win, si oui elle re
         return true;
     }
 }
-// Fonction de diffusion des messages à tous les clients WebSocket connectés
-function broadcast(message) {
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
-}
-// Diffuse tous les users
-function broadcastUsers() {
-    console.log("broadcastUsers affiche")
-    console.log("a")
-    logLobbies(lobbies)
-    const userListMessage = JSON.stringify({ type: 'user_list', users: users });
-    broadcast(userListMessage);
-}
-
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
