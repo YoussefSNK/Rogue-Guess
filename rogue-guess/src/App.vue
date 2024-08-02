@@ -27,4 +27,10 @@ nav {
     }
   }
 }
+
+body, html { //Reset du css pour empêcher les margin de con
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 </style>
