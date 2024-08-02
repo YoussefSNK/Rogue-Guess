@@ -40,6 +40,7 @@ export default {
   mounted() {
     this.$socket.addEventListener('message', this.handleSocketMessage);
     this.$socket.send(JSON.stringify({ type: 'ask_players', gameCode: this.gameCode }));
+    this.loadListImages();
   },
   methods: {
     handleSocketMessage(event) {
@@ -98,6 +99,39 @@ export default {
             <div>${user.username}</div>`;
           otherPlayersDiv.appendChild(playerElement);
         });
+      }
+    },
+    async loadListImages() {
+      try {
+        const response = await fetch('http://localhost:3000/api/requests');
+        const images = await response.json();
+        const imageContainer = document.getElementById('image-container');
+        imageContainer.innerHTML = ''; // Vider le conteneur avant d'ajouter les nouvelles images
+
+        images.forEach(image => {
+          const titleElement = document.createElement('h3');
+          titleElement.innerText = image.Title;
+
+          const imgElement = document.createElement('img');
+          imgElement.src = `images/list_icons/${image.Image}`;
+          imgElement.alt = 'Request Image';
+          imgElement.classList.add('request-image');
+          imgElement.addEventListener('click', () => {
+            this.$socket.send(JSON.stringify({
+              roomCode: this.gameCode,
+              type: 'start_game',
+              theme: image.Image.replace('.png', '')
+            }));
+          });
+
+          const container = document.createElement('div');
+          container.classList.add('image-container');
+          container.appendChild(titleElement);
+          container.appendChild(imgElement);
+          imageContainer.appendChild(container);
+        });
+      } catch (error) {
+        console.error('Erreur lors du chargement des images:', error);
       }
     }
   },

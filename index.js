@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const cors = require('cors');
 
 const port = process.env.PORT || 3000;
 
@@ -32,7 +33,8 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.use(cors({origin: 'http://localhost:8080'}));
+  
 // Routes
 app.get('/', (req, res) => {
     res.render('index');
