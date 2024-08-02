@@ -44,34 +44,6 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        function updatePlayerList(users) {
-            const firstPlayer = document.getElementById('firstPlayer');
-            const otherPlayers = document.getElementById('otherPlayers');
-            firstPlayer.innerHTML = '';
-            otherPlayers.innerHTML = ''; // Clear the current list
-
-            if (users.length > 0) {
-                const firstUser = users[0];
-                const firstPlayerElement = document.createElement('div');
-                firstPlayerElement.classList.add('player');
-                firstPlayerElement.innerHTML = `
-                    <img src="${firstUser.avatar}" alt="Avatar">
-                    <div>${firstUser.username}</div>`;
-                firstPlayer.appendChild(firstPlayerElement);
-
-                const otherUsers = users.slice(1);
-                otherUsers.forEach(user => {
-                    const playerElement = document.createElement('div');
-                    playerElement.classList.add('player');
-                    playerElement.innerHTML = `
-                        <img src="${user.avatar}" alt="Avatar">
-                        <div>${user.username}</div>`;
-                    otherPlayers.appendChild(playerElement);
-                });
-            }
-        }
-
-
         function loadListImages() {
             fetch('/api/requests')
                 .then(response => response.json())

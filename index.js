@@ -77,7 +77,7 @@ wss.on('connection', (ws) => {
                 handleJoinGame(data.userInfo, ws);
                 break;
             case 'chat_message':
-                handleChatMessage(data, ws);
+                handleChatMessage(data.message, ws);
                 break;
             case 'ask_players':
                 handleAskPlayers(data, ws);
@@ -177,30 +177,54 @@ function handleAskPlayers(data, ws) {
 
 
 
+function handleChatMessage(msg, ws) {
+    // Trouver le code du lobby auquel appartient le client
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws));
 
+    if (gameCode) {
+        // Trouver le joueur qui envoie le message
+        const player = lobbies[gameCode].find(player => player.ws === ws);
 
-
-
-
-
-
-function handleChatMessage(data, ws) {
-    const { roomCode, message, username, avatar } = data;
-    const lobby = lobbies[roomCode];
-    if (lobby) {
-        const chatMessage = {
+        // Créer le message avec l'avatar et le nom d'utilisateur du joueur
+        const message = JSON.stringify({
             type: 'chat_message',
-            message,
-            username,
-            avatar
-        };
-        lobby.forEach(user => {
-            if (user.ws && user.ws.readyState === WebSocket.OPEN) {
-                user.ws.send(JSON.stringify(chatMessage));
+            message: {
+                username: player.username,
+                avatar: player.avatar,
+                message: msg.message
             }
+        });
+
+        // Envoyer le message à tous les joueurs dans le même lobby
+        lobbies[gameCode].forEach(player => {
+            player.ws.send(message);
         });
     }
 }
+
+
+
+
+
+
+
+// function handleChatMessage(data, ws) {
+//     const { roomCode, message, username, avatar } = data;
+//     const lobby = lobbies[roomCode];
+//     if (lobby) {
+//         const chatMessage = {
+//             type: 'chat_message',
+//             message,
+//             username,
+//             avatar
+//         };
+//         lobby.forEach(user => {
+//             if (user.ws && user.ws.readyState === WebSocket.OPEN) {
+//                 user.ws.send(JSON.stringify(chatMessage));
+//             }
+//         });
+//     }
+// }
 
 
 

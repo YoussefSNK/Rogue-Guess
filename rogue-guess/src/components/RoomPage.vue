@@ -6,9 +6,9 @@
             <div class="blue">
                 <div class="chat-container">
                     <div class="messages" id="messages"></div>
-                    <form id="message-form">
+                    <form id="message-form" @submit.prevent="sendMessage">
                         <label for="message-input"></label>
-                        <input type="text" id="message-input" placeholder="Entrez votre message...">
+                        <input type="text" id="message-input" v-model="currentMessage" placeholder="Entrez votre message...">
                         <button type="submit">Envoyer</button>
                     </form>
                 </div>
@@ -32,40 +32,55 @@ export default {
   },
   data() {
     return {
-      userInfo: null,
       messages: [],
-      players: [] // Mise à jour pour stocker la liste des joueurs
+      players: [], // Mise à jour pour stocker la liste des joueurs
+      currentMessage: ''
     };
   },
   mounted() {
     this.$socket.addEventListener('message', this.handleSocketMessage);
-    this.$socket.send(JSON.stringify({ type: 'get_user_info', gameCode: this.gameCode }));
-    const askPlayersMessage = JSON.stringify({ type: 'ask_players', gameCode: this.gameCode });
-    console.log('Envoi de ask_players:', askPlayersMessage);
-    this.$socket.send(askPlayersMessage);
+    this.$socket.send(JSON.stringify({ type: 'ask_players', gameCode: this.gameCode }));
   },
   methods: {
     handleSocketMessage(event) {
       const data = JSON.parse(event.data);
-      if (data.type === 'user_info') {
-        this.userInfo = data.userInfo;
-      } else if (data.type === 'chat_message') {
-        this.messages.push(data.message);
+      if (data.type === 'chat_message') {
+        this.addMessageToUI(data.message);
       } else if (data.type === 'asked_players') {
         this.players = data.players;
         this.displayPlayers();
+      }
+    },
+    addMessageToUI(msg) {
+      const messages = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.innerHTML = `
+        <img src="${msg.avatar}" alt="Avatar" class="avatar"> 
+        <span>${msg.username}: ${msg.message}</span>`;
+      messages.appendChild(messageElement);
+      messages.scrollTop = messages.scrollHeight;
+    },
+    sendMessage() {
+      if (this.currentMessage.trim() !== '') {
+        const messageData = {
+          type: 'chat_message',
+          message: {
+            message: this.currentMessage
+          }
+        };
+        this.$socket.send(JSON.stringify(messageData));
+        this.currentMessage = '';
       }
     },
     displayPlayers() {
       const firstPlayerDiv = document.getElementById('firstPlayer');
       const otherPlayersDiv = document.getElementById('otherPlayers');
 
-      // Vider les conteneurs existants
       firstPlayerDiv.innerHTML = '';
       otherPlayersDiv.innerHTML = '';
 
       if (this.players && this.players.length > 0) {
-        // Gérer le premier joueur
         const firstUser = this.players[0];
         const firstPlayerElement = document.createElement('div');
         firstPlayerElement.classList.add('player');
@@ -74,7 +89,6 @@ export default {
           <div>${firstUser.username}</div>`;
         firstPlayerDiv.appendChild(firstPlayerElement);
 
-        // Gérer les autres joueurs
         const otherUsers = this.players.slice(1);
         otherUsers.forEach(user => {
           const playerElement = document.createElement('div');
