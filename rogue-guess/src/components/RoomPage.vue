@@ -1,7 +1,15 @@
 <template>
     <div class="roomPage">
         <div class="container">
-            <div class="red" id="image-container"></div>
+            <div class="red" id="image-container">
+              <ImageCard
+                v-for="(image, index) in images"
+                :key="index"
+                :title="image.Title"
+                :imageSrc="getImageSrc(image.Image)"
+                @image-clicked="handleImageClick"
+              />
+            </div>
             <div class="green">Logs</div>
             <div class="blue">
                 <div class="chat-container">
@@ -22,8 +30,13 @@
 </template>
 
 <script>
+import ImageCard from '@/components/RoomPageImageCard.vue';
+
 export default {
   name: 'RoomPage',
+  components: {
+    ImageCard
+  },
   props: {
     gameCode: {
       type: String,
@@ -32,6 +45,7 @@ export default {
   },
   data() {
     return {
+      images: [],
       messages: [],
       players: [], // Mise à jour pour stocker la liste des joueurs
       currentMessage: ''
@@ -101,38 +115,24 @@ export default {
         });
       }
     },
-    async loadListImages() {
-      try {
-        const response = await fetch('http://localhost:3000/api/requests');
-        const images = await response.json();
-        const imageContainer = document.getElementById('image-container');
-        imageContainer.innerHTML = ''; // Vider le conteneur avant d'ajouter les nouvelles images
-
-        images.forEach(image => {
-          const titleElement = document.createElement('h3');
-          titleElement.innerText = image.Title;
-
-          const imgElement = document.createElement('img');
-          imgElement.src = `images/list_icons/${image.Image}`;
-          imgElement.alt = 'Request Image';
-          imgElement.classList.add('request-image');
-          imgElement.addEventListener('click', () => {
-            this.$socket.send(JSON.stringify({
-              roomCode: this.gameCode,
-              type: 'start_game',
-              theme: image.Image.replace('.png', '')
-            }));
-          });
-
-          const container = document.createElement('div');
-          container.classList.add('image-container');
-          container.appendChild(titleElement);
-          container.appendChild(imgElement);
-          imageContainer.appendChild(container);
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement des images:', error);
-      }
+    loadListImages() {
+      fetch('http://localhost:3000/api/requests')
+        .then(response => response.json())
+        .then(images => {
+          this.images = images; // Mettre à jour les images reçues de l'API
+        })
+        .catch(error => console.error('Erreur lors du chargement des images:', error));
+    },
+    getImageSrc(imageFileName) {
+      /* eslint-disable import/no-dynamic-require */
+      /* eslint-disable global-require */
+      return require(`@/assets/images/list_icons/${imageFileName}`);
+      /* eslint-enable import/no-dynamic-require */
+      /* eslint-enable global-require */
+    },
+    handleImageClick(title) {
+      console.log(`Image clicked: ${title}`);
+      // Gérer l'événement de clic de l'image
     }
   },
   beforeUnmount() {
@@ -219,20 +219,20 @@ export default {
     background-color: #16a085;
 }
 
-.message {
+:deep(.message) {
     display: flex;
     align-items: flex-start;
     margin-bottom: 20px;
 }
 
-.message .avatar {
+:deep(.message .avatar) {
     width: 40px;
     height: 40px;
     border-radius: 10%;
     margin-right: 15px;
 }
 
-.message .message-content {
+:deep(.message .message-content) {
     background-color: #1abc9c;
     color: #ffffff;
     padding: 10px 15px;
@@ -265,7 +265,7 @@ export default {
     background-color: #000000;
 }
 
-.container {
+:deep(.container) {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
@@ -274,7 +274,8 @@ export default {
     height: 90%;
 }
 
-.red {
+:deep(.red) {
+    overflow: hidden;
     grid-column: 1 / 4;
     grid-row: 1 / 3;
     background-color: #34495e;
@@ -287,7 +288,8 @@ export default {
     border-radius: 15px; /* Arrondit les coins de la grille */
 }
 
-.red .image-container {
+:deep(.red .image-card) {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -299,18 +301,16 @@ export default {
     width: 100%; /* Force la carte à remplir l'espace disponible */
 }
 
-.red .image-container img {
+:deep(.red .image-card img) {
     max-width: 100px;
     max-height: 100px;
     border-radius: 8px;
     transition: transform 0.2s ease-in-out;
 }
 
-.red .image-container img:hover {
-    transform: scale(1.1);
-}
+:deep(.red .image-container img:hover) {transform: scale(1.1);}
 
-.red .image-container h3 {
+:deep(.red .image-container h3) {
     font-size: 14px;
     margin-top: 10px;
     text-align: center;
@@ -341,7 +341,7 @@ export default {
     flex-shrink: 0; /* Empêche de réduire la taille de la div */
 }
 
-.yellow {
+:deep(.yellow) {
     grid-column: 4 / 4;
     grid-row: 1 / 4;
     /* background-color: #f1c40f; */
@@ -360,7 +360,7 @@ export default {
     width: 100%;
 }
 
-.player {
+:deep(.player) {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -375,20 +375,20 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.player div {
+:deep(.player div) {
     text-align: center;
     color: #f1c40f;
     font-weight: bold;
     border-radius: 15%;
 }
 
-.player:hover {
+:deep(.player:hover) {
     transform: translateY(-5px);
     background-color: #3E5771;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-#firstPlayer {
+:deep(#firstPlayer) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -397,7 +397,7 @@ export default {
     width: 100%;
 }
 
-#firstPlayer img {
+:deep(#firstPlayer img) {
     width: 90%;
     height: auto;
     border-radius: 15%;
@@ -405,14 +405,14 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#otherPlayers {
+:deep(#otherPlayers) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     width: 100%;
 }
 
-#otherPlayers .player img {
+:deep(#otherPlayers .player img) {
     width: 100%;
     height: auto;
 }
