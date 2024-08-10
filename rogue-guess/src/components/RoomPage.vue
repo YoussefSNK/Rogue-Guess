@@ -225,6 +225,10 @@ export default {
     margin-bottom: 20px;
 }
 
+:deep(.message:last-child) {
+    margin-bottom: 0;
+}
+
 :deep(.message .avatar) {
     width: 40px;
     height: 40px;
