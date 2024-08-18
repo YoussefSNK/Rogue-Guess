@@ -175,7 +175,7 @@ function handleCreateGame(userInfo, ws) {
     lobbies[gameCode] = [{ ...userInfo}];
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
     console.log(`Game created with code: ${gameCode}`);
-    console.log(lobbies)
+    displayLobbies(lobbies)
 }
 function handleJoinGame(userInfo, ws) {
     const { gameCode } = userInfo;
@@ -185,9 +185,8 @@ function handleJoinGame(userInfo, ws) {
     } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
     }
-    console.log(lobbies)
+    displayLobbies(lobbies)
 }
-
 // diffuse la liste des joueurs d'un lobby à tous ses joueurs
 function handleAskPlayers(data, ws) {
     const gameCode = data.gameCode;
@@ -216,9 +215,6 @@ function handleAskPlayers(data, ws) {
         }));
     }
 }
-
-
-
 
 function handleChatMessage(msg, ws) {
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws)); // Trouver le code du lobby auquel appartient le client
@@ -363,7 +359,28 @@ wss.on('error', (error) => {
 
 
 
+function displayLobbies(lobbies) {
+    // Parcourir chaque lobby par son identifiant
+    for (const lobbyId in lobbies) {
+        if (lobbies.hasOwnProperty(lobbyId)) {
+            console.log(`Lobby ID: ${lobbyId}`);
+            const players = lobbies[lobbyId];
 
+            // Parcourir chaque joueur dans le lobby
+            players.forEach((player, index) => {
+                console.log(`  Player ${index + 1}:`);
+                console.log(`    Username: ${player.username}`);
+                console.log(`    State: ${player.state}`);
+                console.log(`    WebSocket: ${player.ws}`);
+                
+                // Si l'objet contient un gameCode, l'afficher également
+                if (player.gameCode) {
+                    console.log(`    Game Code: ${player.gameCode}`);
+                }
+            });
+        }
+    }
+}
 
 
 
