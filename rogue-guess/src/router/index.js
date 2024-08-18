@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../components/HomePage.vue';
 import RoomPage from '../components/RoomPage.vue';
+import GamePage from '../components/GamePage.vue';
 
 const routes = [
   {
@@ -14,6 +15,13 @@ const routes = [
     name: 'Room',
     component: RoomPage,
     meta: { title: 'Lobby de con' },
+    props: true,
+  },
+  {
+    path: '/game/:gameCode',
+    name: 'Game',
+    component: GamePage,
+    meta: { title: 'Game de con' },
     props: true,
   }
 ];
