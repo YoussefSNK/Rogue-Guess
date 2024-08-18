@@ -73,11 +73,11 @@ export default {
     createGame() {
       // localStorage.setItem('currentIndex', currentIndex.toString());
       const userInfo = { username: this.name, avatar: this.currentAvatar.src, uuid: this.uuidv4(), state: 'alive' };
-      this.$socket.send(JSON.stringify({ type: 'create_game', userInfo }));
+      this.$socket.send(JSON.stringify({ type: 'create_room', userInfo }));
     },
     joinGame() {
       const userInfo = { username: this.name, avatar: this.currentAvatar.src, uuid: this.uuidv4(), state: 'alive', gameCode: this.gameCode };
-      this.$socket.send(JSON.stringify({ type: 'join_game', userInfo }));
+      this.$socket.send(JSON.stringify({ type: 'join_room', userInfo }));
     },
     changeAvatar(direction) {
       this.isVisible = false;
@@ -112,7 +112,7 @@ export default {
     this.addFloatAnimation(this.$refs.bienvenue);
     this.$socket.addEventListener('message', event => {
       const data = JSON.parse(event.data);
-      if (data.type === 'game_created' || data.type === 'game_joined') {
+      if (data.type === 'room_created' || data.type === 'room_joined') {
         const gameCode = encodeURIComponent(data.gameCode);
         this.$router.push({ name: 'Room', params: { gameCode } });
       }

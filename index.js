@@ -70,11 +70,11 @@ wss.on('connection', (ws) => {
         const data = JSON.parse(message);
         // console.log('Message reçu (parsed):', data);
         switch (data.type.trim()) {
-            case 'create_game':
+            case 'create_room':
                 data.userInfo.ws = ws;
                 handleCreateGame(data.userInfo, ws);
                 break;
-            case 'join_game':
+            case 'join_room':
                 data.userInfo.ws = ws;
                 handleJoinGame(data.userInfo, ws);
                 break;
@@ -167,7 +167,7 @@ function generateGameCode() {
 function handleCreateGame(userInfo, ws) {
     const gameCode = generateGameCode();
     lobbies[gameCode] = [{ ...userInfo}];
-    ws.send(JSON.stringify({ type: 'game_created', gameCode }));
+    ws.send(JSON.stringify({ type: 'room_created', gameCode }));
     console.log(`Game created with code: ${gameCode}`);
     console.log(lobbies)
 }
@@ -175,7 +175,7 @@ function handleJoinGame(userInfo, ws) {
     const { gameCode } = userInfo;
     if (lobbies[gameCode]) {
         lobbies[gameCode].push({ ...userInfo });
-        ws.send(JSON.stringify({ type: 'game_joined', gameCode }));
+        ws.send(JSON.stringify({ type: 'room_joined', gameCode }));
     } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
     }
