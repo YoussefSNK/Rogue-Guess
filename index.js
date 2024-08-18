@@ -85,7 +85,13 @@ wss.on('connection', (ws) => {
                 handleAskPlayers(data, ws);
                 break;
 
-            case 'hello':
+            case 'start_game':
+                //prend tous les joueurs de ce lobby
+                handleStartGame(data, ws);
+                //leur envoie la socket de la game pour qu'ils y aillent
+                //-cette socket contient la liste des joueurs 
+
+                //enregistre la liste des perso dispo ici
                 console.log("hello !!!", data.title)
                 break;
 
@@ -239,7 +245,13 @@ function handleChatMessage(msg, ws) {
     }
 }
 
+// la fonction doit envoyer un socket à tous les joueurs du lobby pour qu'ils aillent sur la game
+// générer la liste à partir de la bdd
+function handleStartGame(msg, ws) {
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws));
 
+    const message = JSON.stringify({type: 'game_start'}); // créé le message de la socket
+    lobbies[gameCode].forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
 
 
 

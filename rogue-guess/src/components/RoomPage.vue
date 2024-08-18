@@ -64,6 +64,9 @@ export default {
       } else if (data.type === 'asked_players') {
         this.players = data.players;
         this.displayPlayers();
+      } else if (data.type === 'game_start') {
+        const gameCode = encodeURIComponent(data.gameCode);
+        this.$router.push({ name: 'Game', params: { gameCode } });
       }
     },
     addMessageToUI(msg) {
@@ -131,8 +134,11 @@ export default {
       /* eslint-enable global-require */
     },
     handleImageClick(title) {
+      this.$socket.send(JSON.stringify({
+        type: 'start_game',
+        title
+      }));
       console.log(`Image clicked: ${title}`);
-      // Gérer l'événement de clic de l'image
     }
   },
   beforeUnmount() {
