@@ -68,7 +68,6 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
 
         const data = JSON.parse(message);
-        // console.log('Message reçu (parsed):', data);
         switch (data.type.trim()) {
             case 'create_room':
                 data.userInfo.ws = ws;
@@ -167,6 +166,7 @@ wss.on('connection', (ws) => {
 
 });
 
+
 function generateGameCode() {
     return crypto.randomBytes(3).toString('hex');
 }
@@ -221,13 +221,9 @@ function handleAskPlayers(data, ws) {
 
 
 function handleChatMessage(msg, ws) {
-    // Trouver le code du lobby auquel appartient le client
-    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws));
-
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws)); // Trouver le code du lobby auquel appartient le client
     if (gameCode) {
-        // Trouver le joueur qui envoie le message
-        const player = lobbies[gameCode].find(player => player.ws === ws);
-
+        const player = lobbies[gameCode].find(player => player.ws === ws); // Trouver le joueur qui envoie le message
         // Créer le message avec l'avatar et le nom d'utilisateur du joueur
         const message = JSON.stringify({
             type: 'chat_message',
@@ -253,6 +249,8 @@ function handleStartGame(msg, ws) {
     const message = JSON.stringify({type: 'game_start'}); // créé le message de la socket
     lobbies[gameCode].forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
 
+    console.log(gameCode)
+}
 
 
 
