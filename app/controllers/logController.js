@@ -49,7 +49,7 @@ exports.getEntitiesBySQLRequest = (sqlRequest, callback) => {
 };
 
 exports.getSQLByTheme = (theme, callback) => {
-  const query = "SELECT SQL_Request FROM Request WHERE Image = ?";
+  const query = "SELECT SQL_Request FROM Request WHERE Title = ?";
   db.all(query, [theme], (err, rows) => {
       if (err) {
           console.error('Erreur lors de la récupération de la requête SQL par thème:', err);
