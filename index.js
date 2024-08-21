@@ -242,6 +242,8 @@ function handleChatMessage(msg, ws) {
 function handleStartGame(msg, ws) {
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws));
 
+    if (lobbies[gameCode].length > 0 && ws == lobbies[gameCode][0].ws) {
+
     const message = JSON.stringify({type: 'game_start', gameCode: gameCode}); // créé le message de la socket
     lobbies[gameCode].forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
 
