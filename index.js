@@ -71,11 +71,11 @@ wss.on('connection', (ws) => {
         switch (data.type.trim()) {
             case 'create_room':
                 data.userInfo.ws = ws;
-                handleCreateGame(data.userInfo, ws);
+                handleCreateRoom(data.userInfo, ws);
                 break;
             case 'join_room':
                 data.userInfo.ws = ws;
-                handleJoinGame(data.userInfo, ws);
+                handleJoinRoom(data.userInfo, ws);
                 break;
             case 'chat_message':
                 handleChatMessage(data.message, ws);
@@ -170,14 +170,14 @@ wss.on('connection', (ws) => {
 function generateGameCode() {
     return crypto.randomBytes(3).toString('hex');
 }
-function handleCreateGame(userInfo, ws) {
+function handleCreateRoom(userInfo, ws) {
     const gameCode = generateGameCode();
     lobbies[gameCode] = [{ ...userInfo}];
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
     console.log(`Game created with code: ${gameCode}`);
     displayLobbies(lobbies)
 }
-function handleJoinGame(userInfo, ws) {
+function handleJoinRoom(userInfo, ws) {
     const { gameCode } = userInfo;
     if (lobbies[gameCode]) {
         lobbies[gameCode].push({ ...userInfo });
