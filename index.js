@@ -137,7 +137,7 @@ wss.on('connection', (ws) => {
 
         // Parcours des lobbies pour trouver l'utilisateur déconnecté
         for (const code in lobbies) {
-            const index = lobbies[code].findIndex(player => player.ws === ws);
+            const index = lobbies[code].Joueurs.findIndex(player => player.ws === ws);
             if (index !== -1) {
                 lobbyCode = code;
                 playerIndex = index;
