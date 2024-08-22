@@ -192,8 +192,16 @@ function handleCreateRoom(userInfo, ws) {
 }
 function handleJoinRoom(userInfo, ws) {
     const { gameCode } = userInfo;
+    
     if (lobbies[gameCode]) {
-        lobbies[gameCode].push({ ...userInfo });
+        lobbies[gameCode].Joueurs.push({
+            name: userInfo.username,
+            avatar: userInfo.avatar,
+            state: 'alive',
+            ws: ws,
+            pouvoirs: []
+        });
+
         ws.send(JSON.stringify({ type: 'room_joined', gameCode }));
     } else {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid game code' }));
