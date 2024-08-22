@@ -60,8 +60,6 @@ app.use('/api', logRoutes);
 
 // let rooms = {};
 
-
-let users = [];
 let lobbies = {};
 
 wss.on('connection', (ws) => {
@@ -172,7 +170,22 @@ function generateGameCode() {
 }
 function handleCreateRoom(userInfo, ws) {
     const gameCode = generateGameCode();
-    lobbies[gameCode] = [{ ...userInfo}];
+
+    lobbies[gameCode] = {
+        enCours: false,
+        entities: [],
+        Joueurs: [
+            {
+                name: userInfo.username,    // Nom du joueur
+                avatar: userInfo.avatar,    // Avatar du joueur
+                state: "alive",
+                ws: ws,                     // WebSocket associée
+                pouvoirs: []                // Pouvoirs du joueur, par défaut vide
+            }
+        ]
+    };
+
+
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
     console.log(`Game created with code: ${gameCode}`);
     displayLobbies(lobbies)
@@ -193,9 +206,8 @@ function handleAskPlayers(data, ws) {
     const lobby = lobbies[gameCode];
     
     if (lobby) {
-        // On récupère l'information complète de chaque joueur dans le lobby
-        const playersInfo = lobby.map(player => ({
-            username: player.username,
+        const playersInfo = lobby.Joueurs.map(player => ({
+            username: player.name,
             avatar: player.avatar
         }));
 
@@ -205,7 +217,7 @@ function handleAskPlayers(data, ws) {
         });
 
         // Envoyer le message à tous les utilisateurs du lobby
-        lobby.forEach(player => {
+        lobby.Joueurs.forEach(player => {
             player.ws.send(message);
         });
     } else {
@@ -239,13 +251,13 @@ function handleChatMessage(msg, ws) {
 
 // la fonction doit envoyer un socket à tous les joueurs du lobby pour qu'ils aillent sur la game
 // générer la liste à partir de la bdd
-function handleStartGame(msg, ws) {
-    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws));
+function handleStartGame(data, ws) {
 
-    if (lobbies[gameCode].length > 0 && ws == lobbies[gameCode][0].ws) {
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
+    if (lobbies[gameCode].Joueurs.length > 0 && ws === lobbies[gameCode].Joueurs[0].ws) {
 
     const message = JSON.stringify({type: 'game_start', gameCode: gameCode}); // créé le message de la socket
-    lobbies[gameCode].forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
+        lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
 
     }
 }
