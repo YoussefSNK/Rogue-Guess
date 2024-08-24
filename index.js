@@ -348,7 +348,11 @@ function handleSendAnswer(data, ws) {
         for (let i = lobbies[gameCode].entities.length - 1; i >= 0; i--) {
             if (lobbies[gameCode].entities[i] === data.text) {
                 lobbies[gameCode].entities.splice(i, 1);
-                console.log("Bien vu")
+
+                lobbies[gameCode].Joueurs.forEach(player => {
+                    player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
+                });
+
                 changeToNextPlayer(gameCode)
                 break;
             }

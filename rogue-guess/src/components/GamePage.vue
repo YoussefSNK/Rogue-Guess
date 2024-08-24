@@ -1,5 +1,5 @@
 <template>
-    <div id="background"></div>
+    <div id="background" ref="background"></div>
     <div class="container">
         <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
@@ -80,7 +80,9 @@ export default {
           console.log('not_your_turn');
           this.handleNotYourTurn();
           break;
-
+        case 'good_answer':
+          this.addBackgroundImage(data.entity);
+          break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
           break;
@@ -107,7 +109,15 @@ export default {
     },
     handleNotYourTurn() {
       this.inputDisabled = true;
+    },
+    /* eslint-disable */
+    addBackgroundImage(text) {  
+      const img = document.createElement('img');
+      img.src = require(`@/assets/images/entity/${text}.png`);  // Utilisation de Webpack pour gérer les assets
+      img.classList.add('background-image');
+      this.$refs.background.appendChild(img);
     }
+
   },
   beforeUnmount() {
     this.$socket.removeEventListener('message', this.handleSocketMessage);
@@ -127,4 +137,28 @@ export default {
     clip: rect(0, 0, 0, 0);
     border: 0;
 }
+
+#background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Derrière tout le reste */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 100px); /* Ajustez la taille de la colonne si nécessaire */
+    grid-auto-rows: 100px; /* Ajustez la hauteur de la ligne si nécessaire */
+}
+
+.background-image {
+    width: 100%;
+    height: 100%;
+    opacity: 0.5; /* Transparence pour voir les autres images */
+    transition: opacity 0.5s ease-in-out;
+}
+
+.background-image:hover {
+    opacity: 1; /* Pleine opacité au survol */
+}
+
 </style>
