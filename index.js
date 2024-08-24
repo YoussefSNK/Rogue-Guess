@@ -85,11 +85,16 @@ wss.on('connection', (ws) => {
             case 'start_game':
                 //prend tous les joueurs de ce lobby
                 handleStartGame(data, ws);
-                //leur envoie la socket de la game pour qu'ils y aillent
-                //-cette socket contient la liste des joueurs 
-
-                //enregistre la liste des perso dispo ici
-                console.log("hello !!!", data.title)
+                break;
+            case 'player_arrived':
+                console.log("1 Joueur est arrivé !");
+                handlePlayerArrived(data, ws);
+                break;
+            case 'text_update':
+                handleTextUpdate(data, ws);
+                break;
+            case 'send_answer':
+                handleSendAnswer(data, ws);
                 break;
 
             // case 'start_game':
@@ -147,7 +152,7 @@ wss.on('connection', (ws) => {
 
         if (lobbyCode !== null && playerIndex !== -1) {
             // Supprimer le joueur du lobby
-            lobbies[lobbyCode].splice(playerIndex, 1);
+            lobbies[lobbyCode].Joueurs.splice(playerIndex, 1);
 
             // Si le lobby est vide, on peut éventuellement le supprimer
             if (lobbies[lobbyCode].length === 0) {
@@ -173,16 +178,18 @@ function handleCreateRoom(userInfo, ws) {
 
     lobbies[gameCode] = {
         enCours: false,
+        auTourDe: null, //ce sera l'index du joueur dont c'est le tour
         entities: [],
         Joueurs: [
             {
-                name: userInfo.username,    // Nom du joueur
-                avatar: userInfo.avatar,    // Avatar du joueur
+                name: userInfo.username,
+                avatar: userInfo.avatar,
                 state: "alive",
                 ws: ws,                     // WebSocket associée
-                pouvoirs: []                // Pouvoirs du joueur, par défaut vide
+                pouvoirs: []
             }
-        ]
+        ],
+        JoueursEnVie: []
     };
 
 
@@ -263,12 +270,120 @@ function handleStartGame(data, ws) {
 
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
     if (lobbies[gameCode].Joueurs.length > 0 && ws === lobbies[gameCode].Joueurs[0].ws) {
-
-    const message = JSON.stringify({type: 'game_start', gameCode: gameCode}); // créé le message de la socket
-        lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(message);}); // envoie le message à tous les joueurs du lobby
-
+        logController.getSQLByTheme(data.title, (err, sqlrequest) => {
+            if (err){
+                console.error('Erreur lors de la récupération des entités:', err);
+                return;
+            }
+            logController.getEntitiesBySQLRequest(sqlrequest, (err, entities) => {
+                if (err) {
+                    console.error('Erreur lors de la récupération des entités 2:', err);
+                    return;
+                }
+                lobbies[gameCode].entities = entities;
+                lobbies[gameCode].enCours = true;
+            });
+        });
+        const message = JSON.stringify({type: 'game_start', gameCode: gameCode});
+        lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(message);});
+        lobbies[gameCode].auTourDe = Math.floor(Math.random() * lobbies[gameCode].Joueurs.length); //défini au pif le joueur qui commence
+        lobbies[gameCode].JoueursEnVie = Array.from({ length: lobbies[gameCode].Joueurs.length }, (v, i) => i); //rempli JoueursEnVie des index de tout le monde
     }
 }
+            //                 rooms[gameCode] = {
+            //                     users: lobbies[data.roomCode].slice(),
+            //                     theme: theme,
+            //                     turnEndTime: Date.now() + 5000
+
+function handlePlayerArrived(data, ws) {
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
+    if (gameCode) {
+
+        const alivePlayers = lobbies[gameCode].Joueurs
+        .filter(player => player.state === 'alive') // ça sert à rien mais oklm
+        .map(player => ({
+            name: player.username,
+            avatar: player.avatar
+        }));
+        ws.send(JSON.stringify({type: "request_game_users",alivePlayers: alivePlayers}))
+
+        if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].ws == ws){ // cest à son tour"
+            ws.send(JSON.stringify({type: "your_turn"}))
+        }
+        else{
+            ws.send(JSON.stringify({type: "not_your_turn"}))
+        }
+    }
+    else{console.log("Étrange 0 !")}
+}
+
+function handleTextUpdate(data, ws) {
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
+    if (gameCode) {
+        const message = JSON.stringify({
+            type: 'text_update',
+            message: data.text
+        });
+        lobbies[gameCode].Joueurs.forEach(player => {
+            if (player.ws != ws){
+                player.ws.send(message);
+            }
+        });
+    }
+    else{console.log("Étrange hein !")}
+}
+
+
+function handleSendAnswer(data, ws) {
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
+    if (gameCode && lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].ws == ws) {
+        
+        const message = JSON.stringify({  // vider l'input de tout le monde
+            type: 'text_update',
+            message: ''})
+        lobbies[gameCode].Joueurs.forEach(player => {
+            player.ws.send(message);
+        });
+
+        for (let i = lobbies[gameCode].entities.length - 1; i >= 0; i--) {
+            if (lobbies[gameCode].entities[i] === data.text) {
+                lobbies[gameCode].entities.splice(i, 1);
+                console.log("Bien vu")
+                changeToNextPlayer(gameCode)
+                break;
+            }
+        }
+        
+
+        ///si oui, changer le tour
+    }
+    else{console.log("Étrange deux !")}
+
+}
+
+
+
+function changeToNextPlayer(gameCode){ //prend un lobby par son gameCode, met à jour le joueur dont c'est le tour, annonce à son lobby
+    const vivants = lobbies[gameCode].JoueursEnVie;
+    const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
+    const prochainIndex = (indexActuel + 1) % vivants.length;
+
+    lobbies[gameCode].auTourDe = vivants[prochainIndex];
+
+    lobbies[gameCode].Joueurs.forEach((player, index) => {
+        if (index === lobbies[gameCode].auTourDe) {
+            player.ws.send(JSON.stringify({ type: "your_turn" }));
+        }
+        else{
+            player.ws.send(JSON.stringify({ type: "not_your_turn" }));
+
+        }
+    });
+}
+
+
+
+
 
 
 
