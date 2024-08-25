@@ -5,7 +5,7 @@
         <div class="turn-info" id="turn-info"></div>
         <div class="timer" id="timer"></div>
         <div class="center">
-            <label for="game-input" class="sr-only">Entrer un texte :</label>
+            <label for="game-input" class="sr-only"></label>
             <input
                 type="text"
                 id="game-input"
@@ -17,15 +17,9 @@
             >
             <div class="player-list" id="player-list"></div>
         </div>
-        <!-- Avatars des joueurs -->
-        <div class="avatar-container" ref="avatarContainer">
+        <div class="game-avatar-container" ref="avatarContainer">
             <img v-for="player in alivePlayers" :key="player.id" :src="player.avatar" class="circle-avatar" :style="getAvatarStyle(player)" alt="ca">
         </div>
-        <div class="player-list" id="player-list"></div>
-    </div>
-    <div class="victory-message" id="victory-message">
-        <div id="victory-username"></div>
-        <div id="winners-container" class="winners-container"></div>
     </div>
     <div class="losers-container" id="losers-container"></div>
 </template>
@@ -101,7 +95,7 @@ export default {
     },
     animateRotation(rotationAngle) {
       const startAngle = this.angleOffset;
-      const targetAngle = this.angleOffset + rotationAngle;
+      const targetAngle = this.angleOffset - rotationAngle; //changer le - en + pour inverser le sens
       const duration = 250;
       const startTime = performance.now();
 
@@ -123,12 +117,12 @@ export default {
       const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
       const radius = 250;
       const angleStep = 2 * Math.PI / this.alivePlayers.length;
-      const startAngle = Math.PI / 2; // Commence à partir du bas
+      const startAngle = -Math.PI / 2; // Commence à partir du haut au lieu du bas
       const index = this.alivePlayers.indexOf(player);
 
       const angle = startAngle - index * angleStep + this.angleOffset;
-      const x = center.x + radius * Math.cos(angle) - 25;
-      const y = center.y + radius * Math.sin(angle) - 25;
+      const x = center.x + radius * Math.cos(angle);
+      const y = center.y + radius * Math.sin(angle);
 
       return {
         position: 'absolute',
@@ -153,16 +147,6 @@ export default {
 </script>
 
 <style>
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
-}
 
 #background {
     position: fixed;
@@ -183,11 +167,22 @@ export default {
     transition: opacity 0.5s ease-in-out;
 }
 
-.background-image:hover {
-    opacity: 1; /* Pleine opacité au survol */
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    flex-direction: column;
+    z-index: 1; /* Devant le fond */
 }
 
 .center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
 }
 
@@ -196,20 +191,21 @@ export default {
     margin: 0 auto;
 }
 
-.game-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    position: relative;
-    flex-direction: column;
-    z-index: 1; /* Devant le fond */
+#game-input {
+    text-align: center;
+    font-size: 24px;
+    width: 100%;
+    max-width: 500px;
 }
 
-.avatar-container {
-    position: relative;
+.game-avatar-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 100%;
     height: 100%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* Empêche les avatars d'interférer avec l'input */
 }
 
 .circle-avatar {
@@ -218,5 +214,7 @@ export default {
     border-radius: 50%;
     position: absolute;
     transition: transform 1s ease; /* Pour une rotation douce */
+    pointer-events: auto; /* Permet l'interaction avec les avatars si nécessaire */
 }
+
 </style>
