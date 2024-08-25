@@ -1,6 +1,6 @@
 <template>
     <div id="background" ref="background"></div>
-    <div class="container">
+    <div class="game-container">
         <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
         <div class="timer" id="timer"></div>
@@ -15,24 +15,11 @@
                 @keydown="handleKeyDown"
                 :disabled="inputDisabled"
             >
+            <div class="player-list" id="player-list"></div>
         </div>
-        <div class="player-list" id="player-list">
-            <div>
-                <h2>Joueurs en vie</h2>
-                <ul>
-                    <li v-for="player in alivePlayers" :key="player.name">
-                        <img :src="player.avatar" alt="Avatar" /> {{ player.name }}
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h2>Joueurs morts</h2>
-                <ul>
-                    <li v-for="player in deadPlayers" :key="player.name">
-                        <img :src="player.avatar" alt="Avatar" /> {{ player.name }}
-                    </li>
-                </ul>
-            </div>
+        <!-- Avatars des joueurs -->
+        <div class="avatar-container" ref="avatarContainer">
+            <img v-for="player in alivePlayers" :key="player.id" :src="player.avatar" class="circle-avatar" :style="getAvatarStyle(player)" alt="ca">
         </div>
         <div class="player-list" id="player-list"></div>
     </div>
@@ -45,12 +32,13 @@
 
 <script>
 export default {
-  data() {
+  data() { /* eslint-disable */
     return {
       alivePlayers: [], // Liste des joueurs en vie
       deadPlayers: [], // Liste des joueurs morts
       inputText: '',
-      inputDisabled: true
+      inputDisabled: true,
+      angleOffset: 0 // Décalage angulaire pour l'animation de rotation
     };
   },
   mounted() {
@@ -82,6 +70,7 @@ export default {
           break;
         case 'good_answer':
           this.addBackgroundImage(data.entity);
+          this.animateRotation(Math.PI * 2 / this.alivePlayers.length);
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
@@ -110,7 +99,44 @@ export default {
     handleNotYourTurn() {
       this.inputDisabled = true;
     },
-    /* eslint-disable */
+    animateRotation(rotationAngle) {
+      const startAngle = this.angleOffset;
+      const targetAngle = this.angleOffset + rotationAngle;
+      const duration = 250;
+      const startTime = performance.now();
+
+      const stepAnimation = (timestamp) => {
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1); // Calculer le progrès de l'animation de 0 à 1
+        this.angleOffset = startAngle + progress * (targetAngle - startAngle); // Interpolation linéaire
+        this.$forceUpdate(); // Forcer la mise à jour pour appliquer la nouvelle rotation
+
+        if (progress < 1) {
+          requestAnimationFrame(stepAnimation); // Continuer l'animation tant que ce n'est pas terminé
+        }
+      };
+
+      requestAnimationFrame(stepAnimation); // Démarrer l'animation
+    },
+    getAvatarStyle(player) {
+      const container = this.$refs.avatarContainer;
+      const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
+      const radius = 250;
+      const angleStep = 2 * Math.PI / this.alivePlayers.length;
+      const startAngle = Math.PI / 2; // Commence à partir du bas
+      const index = this.alivePlayers.indexOf(player);
+
+      const angle = startAngle - index * angleStep + this.angleOffset;
+      const x = center.x + radius * Math.cos(angle) - 25;
+      const y = center.y + radius * Math.sin(angle) - 25;
+
+      return {
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: `translate(-50%, -50%)`
+      };
+    },
     addBackgroundImage(text) {  
       const img = document.createElement('img');
       img.src = require(`@/assets/images/entity/${text}.png`);  // Utilisation de Webpack pour gérer les assets
@@ -161,4 +187,36 @@ export default {
     opacity: 1; /* Pleine opacité au survol */
 }
 
+.center {
+    text-align: center;
+}
+
+.center input {
+    display: block;
+    margin: 0 auto;
+}
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+    flex-direction: column;
+    z-index: 1; /* Devant le fond */
+}
+
+.avatar-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.circle-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 1s ease; /* Pour une rotation douce */
+}
 </style>
