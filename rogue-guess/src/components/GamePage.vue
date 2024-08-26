@@ -1,5 +1,6 @@
 <template>
     <div id="background" ref="background"></div>
+    <div ref="confettiContainer" class="confetti-container"></div>
     <div class="game-container">
         <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
@@ -21,7 +22,16 @@
             <img v-for="player in alivePlayers" :key="player.id" :src="player.avatar" class="circle-avatar" :style="getAvatarStyle(player)" alt="ca">
         </div>
     </div>
-    <div class="losers-container" id="losers-container"></div>
+
+    <Transition name="slide-fade">
+        <div v-if="gameEnded" class="end-screen">
+            <h1>Fin de partie !</h1>
+            <p>Écran pourri à changer</p>
+            <div class="winner-list">
+                <img v-for="winner in winners" :key="winner.id" :src="winner.avatar" class="winner-avatar" alt="Winner Avatar">
+            </div>
+        </div>
+    </Transition>
 </template>
 
 <script>
@@ -32,7 +42,9 @@ export default {
       deadPlayers: [], // Liste des joueurs morts
       inputText: '',
       inputDisabled: true,
-      angleOffset: 0 // Décalage angulaire pour l'animation de rotation
+      angleOffset: 0, // Décalage angulaire pour l'animation de rotation
+      gameEnded: false, // État pour savoir si le jeu est terminé
+      winners: [] // Liste des gagnants
     };
   },
   mounted() {
@@ -65,6 +77,12 @@ export default {
         case 'good_answer':
           this.addBackgroundImage(data.entity);
           this.animateRotation(Math.PI * 2 / this.alivePlayers.length);
+          break;
+        case 'end_of_list':
+          this.addBackgroundImage(data.entity);
+          this.handleGameEnd(this.alivePlayers);
+          this.createConfetti();
+
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
@@ -136,8 +154,59 @@ export default {
       img.src = require(`@/assets/images/entity/${text}.png`);  // Utilisation de Webpack pour gérer les assets
       img.classList.add('background-image');
       this.$refs.background.appendChild(img);
-    }
+    },
+    handleGameEnd(winners) {
+      this.inputDisabled = true;
+      this.winners = winners;
+      this.gameEnded = true;
+    },    
+    createConfetti() {
+      const confettiContainer = this.$refs.confettiContainer;
+      for (let i = 0; i < 100; i++) { // Nombre de confettis
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
 
+        // Paramètres aléatoires pour chaque confetti
+        const size = Math.random() * 10 + 10 + 'px'; // Taille aléatoire entre 10px et 20px
+        const left = Math.random() * 100 + 'vw';
+        const duration = Math.random() * 3 + 3 + 's'; // Durée aléatoire entre 3s et 6s
+        const delay = Math.random() * 3 + 's'; // Délai aléatoire jusqu'à 3s
+        const animationName = `drift-${Math.random().toString(36).substring(2, 15)}`;
+
+        // Ajouter des styles CSS au confetti
+        confetti.style.width = size;
+        confetti.style.height = size;
+        confetti.style.backgroundColor = this.getRandomColor();
+        confetti.style.left = left;
+        confetti.style.animationDuration = duration;
+        confetti.style.animationDelay = delay;
+
+        // Définir l'animation unique pour ce confetti
+        const keyframes = `
+          @keyframes ${animationName} {
+            0% {
+              transform: translateX(${Math.random() * 100 - 50}vw);
+            }
+            100% {
+              transform: translateX(${Math.random() * 100 - 50}vw);
+            }
+          }
+        `;
+        
+        // Ajouter les keyframes au style global
+        const styleSheet = document.styleSheets[0];
+        styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+
+        // Appliquer l'animation au confetti
+        confetti.style.animation = `fall ${duration} linear infinite, ${animationName} ${duration} ease-in-out infinite`;
+
+        confettiContainer.appendChild(confetti);
+      }
+    },
+    getRandomColor() {
+      const randomColor = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
+      return randomColor;
+}
   },
   beforeUnmount() {
     this.$socket.removeEventListener('message', this.handleSocketMessage);
@@ -216,5 +285,114 @@ export default {
     transition: transform 1s ease; /* Pour une rotation douce */
     pointer-events: auto; /* Permet l'interaction avec les avatars si nécessaire */
 }
+
+
+/* .slide-fade-enter-active {
+  transition: all 3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+} */
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 2s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+}
+
+
+
+
+.end-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    /* Supprimer opacity ici */
+}
+
+
+.winner-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.winner-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    position: relative;
+    border: 5px solid transparent; /* Bordure transparente pour appliquer border-image */
+    border-image: conic-gradient(
+        red, orange, yellow, lime, cyan, blue, magenta, red
+    ) 1;
+    animation: spin-border 3s linear infinite;
+    box-sizing: border-box; /* Inclure la bordure dans la taille */
+}
+
+@keyframes spin-border {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+
+
+
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Empêche l'interaction avec les confettis */
+  overflow: hidden;
+  z-index: 20;
+}
+
+.confetti {
+  position: absolute;
+  opacity: 0.7;
+  transform: rotate(45deg);
+  animation: fall 3s linear infinite; /* Animation de la chute uniquement */
+}
+
+/* Animation pour faire tomber les confettis */
+@keyframes fall {
+  0% {
+    top: -10px;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
 
 </style>
