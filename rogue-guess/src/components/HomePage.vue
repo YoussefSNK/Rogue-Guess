@@ -64,6 +64,9 @@ export default {
   },
   methods: {
     handleSubmit() {
+      localStorage.setItem('username', this.name);
+      localStorage.setItem('avatarIndex', this.currentIndex);
+
       if (this.gameCode) {
         this.joinGame();
       } else {
@@ -110,6 +113,17 @@ export default {
     this.addFloatAnimation(this.$refs.avatarContainer);
     this.addFloatAnimation(this.$refs.nameInput);
     this.addFloatAnimation(this.$refs.bienvenue);
+
+    const savedName = localStorage.getItem('username');
+    const savedAvatarIndex = localStorage.getItem('avatarIndex');
+
+    if (savedName) {
+      this.name = savedName;
+    }
+    if (savedAvatarIndex) {
+      this.currentIndex = parseInt(savedAvatarIndex, 10);
+    }
+
     this.$socket.addEventListener('message', event => {
       const data = JSON.parse(event.data);
       if (data.type === 'room_created' || data.type === 'room_joined') {
