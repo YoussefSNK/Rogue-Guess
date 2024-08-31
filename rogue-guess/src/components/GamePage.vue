@@ -181,7 +181,7 @@ export default {
     },    
     createConfetti() {
       const confettiContainer = this.$refs.confettiContainer;
-      for (let i = 0; i < 100; i++) { // Nombre de confettis
+      for (let i = 0; i < 200; i++) { // Nombre de confettis
         const confetti = document.createElement('div');
         confetti.classList.add('confetti');
 
@@ -196,6 +196,7 @@ export default {
         confetti.style.width = size;
         confetti.style.height = size;
         confetti.style.backgroundColor = this.getRandomColor();
+        confetti.style.opaciy = this.getOpacity();
         confetti.style.left = left;
         confetti.style.animationDuration = duration;
         confetti.style.animationDelay = delay;
@@ -437,7 +438,7 @@ export default {
 
 .confetti {
   position: absolute;
-  opacity: 0.7;
+  /* opacity: 0.9; */
   transform: rotate(45deg);
   animation: fall 3s linear infinite; /* Animation de la chute uniquement */
 }
