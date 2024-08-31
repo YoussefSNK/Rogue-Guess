@@ -158,7 +158,7 @@ function handleCreateRoom(userInfo, ws) {
                 pouvoirs: []
             }
         ],
-        JoueursEnVie: []
+        alivePlayersID: []
     };
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
     console.log(`Game created with code: ${gameCode}`);
@@ -254,7 +254,7 @@ function handleStartGame(data, ws) {
         const message = JSON.stringify({type: 'game_start', gameCode: gameCode});
         lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(message);});
         lobbies[gameCode].auTourDe = Math.floor(Math.random() * lobbies[gameCode].Joueurs.length); //défini au pif le joueur qui commence
-        lobbies[gameCode].JoueursEnVie = Array.from({ length: lobbies[gameCode].Joueurs.length }, (v, i) => i); //rempli JoueursEnVie des index de tout le monde
+        lobbies[gameCode].alivePlayersID = Array.from({ length: lobbies[gameCode].Joueurs.length }, (v, i) => i); //rempli alivePlayersID des index de tout le monde
     }
 }
             //                 rooms[gameCode] = {
