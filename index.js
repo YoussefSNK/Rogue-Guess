@@ -147,6 +147,7 @@ function handleCreateRoom(userInfo, ws) {
     lobbies[gameCode] = {
         enCours: false,
         auTourDe: null, //ce sera l'index du joueur dont c'est le tour
+        theme: "",
         entities: [],
         Joueurs: [
             {
@@ -243,6 +244,7 @@ function handleStartGame(data, ws) {
                     return;
                 }
                 lobbies[gameCode].entities = entities;
+                lobbies[gameCode].theme = data.title;
                 lobbies[gameCode].enCours = true;
                 setTimer(gameCode);
 
@@ -270,7 +272,7 @@ function handlePlayerArrived(data, ws) {
             name: player.username,
             avatar: player.avatar
         }));
-        ws.send(JSON.stringify({type: "request_game_users",alivePlayers: alivePlayers}))
+        ws.send(JSON.stringify({type: "request_game_users", auTourDe: lobbies[gameCode].auTourDe, alivePlayers: alivePlayers, theme: lobbies[gameCode].theme}))
 
         if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].ws == ws){ // cest à son tour"
             ws.send(JSON.stringify({type: "your_turn"}))

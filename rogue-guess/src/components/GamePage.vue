@@ -1,7 +1,7 @@
 <template>
     <div id="background" ref="background"></div>
     <div ref="confettiContainer" class="confetti-container"></div>
-
+    <div class="theme" id="theme">{{ theme }}</div>
     <div class="timer" id="timer"></div>
     <div class="game-container">
         <div class="theme" id="theme"></div>
@@ -42,7 +42,7 @@ export default {
     return {
       remainingTime: 0,      
       countdownInterval: null,
-
+      theme: "",
       inputText: '',
       inputDisabled: true,
       angleOffset: 0, // Décalage angulaire pour l'animation de rotation
@@ -72,7 +72,8 @@ export default {
 
       switch (data.type) {
         case 'request_game_users':
-          this.alivePlayers = data.alivePlayers;
+          this.playersList = data.alivePlayers;
+          this.theme = data.theme;
           break;
 
         case 'text_update':
