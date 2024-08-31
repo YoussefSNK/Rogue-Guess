@@ -51,8 +51,19 @@ export default {
     };
   },
   mounted() {
+    if (this.$socket.readyState !== WebSocket.OPEN) {
+      // Si la connexion WebSocket n'est pas ouverte, redirige vers la page d'accueil
+      console.warn("WebSocket n'est pas ouvert, redirection vers la page d'accueil");
+      this.$router.push('/'); // Redirige vers la page d'accueil
+      return;
+    }
     this.$socket.addEventListener('message', this.handleSocketMessage);
+    try {
     this.$socket.send(JSON.stringify({ type: 'player_arrived', message: 'Player has arrived' }));
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message via WebSocket:', error);
+      this.$router.push('/');
+    }
   },
   methods: {
     handleSocketMessage(event) {
