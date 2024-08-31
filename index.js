@@ -268,8 +268,12 @@ function handlePlayerArrived(data, ws) {
         const alivePlayers = lobbies[gameCode].Joueurs
         .filter(player => player.state === 'alive') // ça sert à rien mais oklm
         .map(player => ({
-            name: player.username,
-            avatar: player.avatar
+            name: player.name,
+            avatar: player.avatar,
+            state: player.state,
+            angleOffset: 0,
+            startAngle: 0,
+            targetAngle: 0,
         }));
         ws.send(JSON.stringify({type: "request_game_users", auTourDe: lobbies[gameCode].auTourDe, alivePlayers: alivePlayers, theme: lobbies[gameCode].theme}))
 
