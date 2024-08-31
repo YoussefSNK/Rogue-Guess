@@ -21,7 +21,14 @@
             <div class="player-list" id="player-list"></div>
         </div>
         <div class="game-avatar-container" ref="avatarContainer">
-            <img v-for="player in alivePlayers" :key="player.id" :src="player.avatar" class="circle-avatar" :style="getAvatarStyle(player)" alt="ca">
+          <img
+            v-for="player in playersList"
+            :key="player.id"
+            v-show="player.state !== 'dead'"
+            :src="player.avatar"
+            class="circle-avatar"
+            :style="getAvatarStyle(player)"
+            alt="ca">
         </div>
     </div>
 
@@ -74,6 +81,10 @@ export default {
         case 'request_game_users':
           this.playersList = data.alivePlayers;
           this.theme = data.theme;
+          this.playersList.forEach((player, i) => {
+            player.angleOffset = (((i - data.auTourDe + this.playersList.length) % this.playersList.length) * 2 * Math.PI/ this.playersList.length)
+            console.log(`${player.name}, est placé à ${player.angleOffset* 180/Math.PI}`)
+          })
           break;
 
         case 'text_update':
@@ -91,11 +102,11 @@ export default {
           break;
         case 'good_answer':
           this.addBackgroundImage(data.entity);
-          this.animateRotation(Math.PI * 2 / this.alivePlayers.length);
+          this.animateRotation(Math.PI * 2 / this.playersList.filter(player => player.state === "alive").length,      this.playersList          );
           break;
         case 'end_of_list':
           this.addBackgroundImage(data.entity);
-          this.handleGameEnd(this.alivePlayers);
+          this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
           this.createConfetti();
           break;
         case 'solo_win':
@@ -134,34 +145,73 @@ export default {
     handleNotYourTurn() {
       this.inputDisabled = true;
     },
-    animateRotation(rotationAngle) {
-      const startAngle = this.angleOffset;
-      const targetAngle = this.angleOffset - rotationAngle; //changer le - en + pour inverser le sens
+    animateRotation(rotationAngle, playerList) {-
+      playerList.forEach((player) => {
+        player.startAngle = player.angleOffset
+        player.targetAngle = player.angleOffset - rotationAngle;
+
+        console.log(`player.name = ${player.name} startAngle = ${player.startAngle*180/Math.PI} -> targetAngle = ${player.targetAngle*180/Math.PI}`)
+        // console.log(`startAngle = ${player.startAngle*180/Math.PI}`)
+        // console.log(`targetAngle = ${player.targetAngle*180/Math.PI}`)
+      
+      })
+      const duration = 250;
+      const startTime = performance.now();
+      const stepAnimation = (timestamp) => {
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        playerList.forEach((player) => {
+          player.angleOffset = player.startAngle + progress * (player.targetAngle - player.startAngle);
+        })
+        this.$forceUpdate();
+        if (progress < 1) {requestAnimationFrame(stepAnimation);}
+      };
+      requestAnimationFrame(stepAnimation);
+    },
+
+    animateDecrease(playerList, alivePlayersList, auTourDe) {
+      const aliveCount = playerList.filter(player => player.state === "alive").length;
+      const theta = Math.PI * 2/ (aliveCount + 1);
+      const thetaPrime = Math.PI * 2 / aliveCount;
+      alivePlayersList.forEach((playerIndex, i) => {
+
+        const player = playerList[playerIndex];
+        const targetIndex = 2 + ((i - alivePlayersList.indexOf(auTourDe) + aliveCount) % aliveCount);
+        const targetAngle = player.angleOffset - Math.abs( (targetIndex-2)*thetaPrime - (targetIndex-1)*theta )
+        player.startAngle = player.angleOffset;
+        player.targetAngle = targetAngle;
+
+      });
+
       const duration = 250;
       const startTime = performance.now();
 
       const stepAnimation = (timestamp) => {
         const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / duration, 1); // Calculer le progrès de l'animation de 0 à 1
-        this.angleOffset = startAngle + progress * (targetAngle - startAngle); // Interpolation linéaire
-        this.$forceUpdate(); // Forcer la mise à jour pour appliquer la nouvelle rotation
+        const progress = Math.min(elapsed / duration, 1);
+        
+        playerList.forEach((player) => {
+          if (player.state === 'alive') {
+            player.angleOffset = player.startAngle + progress * (player.targetAngle - player.startAngle);
+          }
+        });
+
+        this.$forceUpdate();
 
         if (progress < 1) {
-          requestAnimationFrame(stepAnimation); // Continuer l'animation tant que ce n'est pas terminé
+          requestAnimationFrame(stepAnimation);
         }
       };
 
-      requestAnimationFrame(stepAnimation); // Démarrer l'animation
+      requestAnimationFrame(stepAnimation);
     },
-    getAvatarStyle(player) {
+    getAvatarStyle(player) { // se fait chaque fois qu'un truc de playerList change (à chaque rotation du coup)
       const container = this.$refs.avatarContainer;
       const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
       const radius = 250;
       const angleStep = 2 * Math.PI / this.alivePlayers.length;
       const startAngle = -Math.PI / 2; // Commence à partir du haut au lieu du bas
-      const index = this.alivePlayers.indexOf(player);
-
-      const angle = startAngle - index * angleStep + this.angleOffset;
+      const angle = startAngle + player.angleOffset;
       const x = center.x + radius * Math.cos(angle);
       const y = center.y + radius * Math.sin(angle);
 
