@@ -218,8 +218,8 @@ function insertInitialData() {
     ("Jayce", "League of legends", "Jayce.png"),
     ("Jhin", "League of legends", "Jhin.png"),
     ("Jinx", "League of legends", "Jinx.png"),
-    ("K'santé", "League of legends", "K'santé.png"),
-    ("Kai'sa", "League of legends", "Kai'sa.png"),
+    ("K'Santé", "League of legends", "K'Santé.png"),
+    ("Kai'Sa", "League of legends", "Kai'Sa.png"),
     ("Kalista", "League of legends", "Kalista.png"),
     ("Karma", "League of legends", "Karma.png"),
     ("Karthus", "League of legends", "Karthus.png"),
@@ -493,7 +493,14 @@ function insertInitialData() {
 
     
     ("1", "Test", "1.png"),
-    ("2", "Test", "2.png")
+    ("2", "Test", "2.png"),
+    ("3", "Test", "3.png"),
+    ("4", "Test", "4.png"),
+    ("5", "Test", "5.png"),
+    ("6", "Test", "6.png"),
+    ("7", "Test", "7.png"),
+    ("8", "Test", "8.png"),
+    ("9", "Test", "9.png")
     
     ;
   `;
