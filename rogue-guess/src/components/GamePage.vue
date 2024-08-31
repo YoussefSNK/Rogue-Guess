@@ -1,6 +1,8 @@
 <template>
     <div id="background" ref="background"></div>
     <div ref="confettiContainer" class="confetti-container"></div>
+
+    <div class="timer" id="timer"></div>
     <div class="game-container">
         <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
@@ -38,8 +40,9 @@
 export default {
   data() { /* eslint-disable */
     return {
-      alivePlayers: [], // Liste des joueurs en vie
-      deadPlayers: [], // Liste des joueurs morts
+      remainingTime: 0,      
+      countdownInterval: null,
+
       inputText: '',
       inputDisabled: true,
       angleOffset: 0, // Décalage angulaire pour l'animation de rotation
@@ -82,7 +85,12 @@ export default {
           this.addBackgroundImage(data.entity);
           this.handleGameEnd(this.alivePlayers);
           this.createConfetti();
-
+          break;
+        case 'solo_win':
+          this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
+          break;
+        case 'timer':
+          this.startCountdown(data.timer);
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
@@ -206,7 +214,33 @@ export default {
     getRandomColor() {
       const randomColor = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
       return randomColor;
-}
+    },
+    startCountdown(milliseconds) {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
+
+      this.remainingTime = milliseconds;
+      this.updateTimerDisplay();
+
+      this.countdownInterval = setInterval(() => {
+        this.remainingTime -= 10;  // Décrémente par 10 ms à chaque intervalle
+        this.updateTimerDisplay();
+
+        if (this.remainingTime <= 0) {
+          clearInterval(this.countdownInterval);
+          this.remainingTime = 0;
+          this.updateTimerDisplay(); // Met à jour l'affichage final à 0.00
+        }
+      }, 10);  // Intervalle de 10 ms pour mettre à jour le compteur
+    },
+    updateTimerDisplay() {
+      const seconds = Math.floor(this.remainingTime / 1000);
+      const tenths = Math.floor((this.remainingTime % 1000) / 100);
+      const hundredths = Math.floor((this.remainingTime % 100) / 10);
+
+      document.getElementById('timer').innerText = `${seconds}:${tenths}${hundredths}`;
+    },
   },
   beforeUnmount() {
     this.$socket.removeEventListener('message', this.handleSocketMessage);
@@ -285,6 +319,19 @@ export default {
     transition: transform 1s ease; /* Pour une rotation douce */
     pointer-events: auto; /* Permet l'interaction avec les avatars si nécessaire */
 }
+
+
+
+
+.theme, .turn-info, .timer {
+    text-align: center;
+    font-size: 24px;
+    color: #ecf0f1;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+
 
 
 /* .slide-fade-enter-active {
