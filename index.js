@@ -251,8 +251,7 @@ function handleStartGame(data, ws) {
                 
             });
         });
-        const message = JSON.stringify({type: 'game_start', gameCode: gameCode});
-        lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(message);});
+        lobbies[gameCode].Joueurs.forEach(player => {player.ws.send(JSON.stringify({type: 'game_start', gameCode: gameCode}));});
         lobbies[gameCode].auTourDe = Math.floor(Math.random() * lobbies[gameCode].Joueurs.length); //défini au pif le joueur qui commence
         lobbies[gameCode].alivePlayersID = Array.from({ length: lobbies[gameCode].Joueurs.length }, (v, i) => i); //rempli alivePlayersID des index de tout le monde
     }
