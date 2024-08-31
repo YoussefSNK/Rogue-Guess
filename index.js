@@ -209,21 +209,21 @@ function handleAskPlayers(data, ws) {
     }
 }
 function handleChatMessage(msg, ws) {
-    const gameCode = Object.keys(lobbies).find(code => lobbies[code].some(player => player.ws === ws)); // Trouver le code du lobby auquel appartient le client
+    const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws)); // Trouver le code du lobby auquel appartient le client
     if (gameCode) {
-        const player = lobbies[gameCode].find(player => player.ws === ws); // Trouver le joueur qui envoie le message
+        const player = lobbies[gameCode].Joueurs.find(player => player.ws === ws); // Trouver le joueur qui envoie le message
         // Créer le message avec l'avatar et le nom d'utilisateur du joueur
         const message = JSON.stringify({
             type: 'chat_message',
             message: {
-                username: player.username,
+                username: player.name,
                 avatar: player.avatar,
                 message: msg.message
             }
         });
 
         // Envoyer le message à tous les joueurs dans le même lobby
-        lobbies[gameCode].forEach(player => {
+        lobbies[gameCode].Joueurs.forEach(player => {
             player.ws.send(message);
         });
     }
