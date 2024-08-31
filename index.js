@@ -244,6 +244,9 @@ function handleStartGame(data, ws) {
                 }
                 lobbies[gameCode].entities = entities;
                 lobbies[gameCode].enCours = true;
+                setTimer(gameCode);
+
+                
             });
         });
         const message = JSON.stringify({type: 'game_start', gameCode: gameCode});
@@ -313,26 +316,31 @@ function handleSendAnswer(data, ws) {
                 if (lobbies[gameCode].entities.length != 0){
                     lobbies[gameCode].Joueurs.forEach(player => {
                         player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
+                        setTimer(gameCode)
                     });
                 }
                 else{
                     lobbies[gameCode].Joueurs.forEach(player => {
                         player.ws.send(JSON.stringify({ type: "end_of_list", entity: data.text }));
                         console.log("game fini")
+                        clearTimeout(lobbies[gameCode].timer);
+                        
                     })
                 }
 
 
                 changeToNextPlayer(gameCode)
+                setTimer(gameCode)
                 break;
             }
         }
     }
-    else{console.log("Étrange deux !")}
-
 }
-function changeToNextPlayer(gameCode){ //prend un lobby par son gameCode, met à jour le joueur dont c'est le tour, annonce à son lobby
-    const vivants = lobbies[gameCode].JoueursEnVie;
+
+//prend un lobby par son gameCode, met à jour le joueur dont c'est le tour, annonce à son lobby
+function changeToNextPlayer(gameCode){
+
+    const vivants = lobbies[gameCode].alivePlayersID;
     const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
     const prochainIndex = (indexActuel + 1) % vivants.length;
 
@@ -347,74 +355,98 @@ function changeToNextPlayer(gameCode){ //prend un lobby par son gameCode, met à
 
         }
     });
+    
+}
+// quand le time arrive à sa fin -> tue le joueur
+function handleTimerEnd(gameCode) {
+    if (lobbies[gameCode]) {
+
+        // si ils sont pas que 2
+        if (lobbies[gameCode].alivePlayersID.length != 2){
+
+            log_lobbies(gameCode)
+
+
+            
+            const oldAuTourDe = lobbies[gameCode].auTourDe
+            console.log("Le joueur", oldAuTourDe+1, lobbies[gameCode].Joueurs[oldAuTourDe].name, "a été éliminé")
+
+            // chercher le joueur d'après tout de suite
+            const vivants = lobbies[gameCode].alivePlayersID;
+            const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
+            const prochainIndex = (indexActuel + 1) % vivants.length;            
+            
+            lobbies[gameCode].auTourDe = vivants[prochainIndex];
+            lobbies[gameCode].Joueurs.forEach((player, index) => {
+                if (index === lobbies[gameCode].auTourDe) {
+                    player.ws.send(JSON.stringify({ type: "your_turn" }));
+                }
+                else{
+                    player.ws.send(JSON.stringify({ type: "not_your_turn" }));
+        
+                }
+            });
+            console.log(`oldAuTourDe = ${oldAuTourDe}, lobbies[gameCode].alivePlayersID = ${lobbies[gameCode].alivePlayersID}`)
+            lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].alivePlayersID.indexOf(oldAuTourDe), 1) // on retire le joueur de la la liste d'index alivePlayersID
+            lobbies[gameCode].Joueurs[oldAuTourDe].state = "dead" // le state du joueur devient dead
+
+            //   vvvvvvvvvvvvvvvvvvvv
+
+            setTimer(gameCode)
+
+
+            lobbies[gameCode].Joueurs.forEach(player => {
+                player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: oldAuTourDe, alivePlayers: lobbies[gameCode].alivePlayersID, auTourDe: lobbies[gameCode].auTourDe}));
+            })
+
+
+
+            log_lobbies(gameCode)
+
+
+        }
+        else{ // CE CAS N'EST PEUT ÊTRE PAS A JOUR
+            log_lobbies(gameCode)
+            console.log("Le joueur", lobbies[gameCode].auTourDe+1, lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "doit mourrir")
+
+
+            lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].auTourDe, 1) 
+            lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].state = "dead" // le state du joueur devient dead
+
+            lobbies[gameCode].Joueurs.forEach(player => {
+                player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: lobbies[gameCode].auTourDe}));
+            })
+
+
+            lobbies[gameCode].Joueurs.forEach(player => {
+                player.ws.send(JSON.stringify({ type: "solo_win" }));
+                console.log("game gagnée")
+                clearTimeout(lobbies[gameCode].timer); 
+            })
+
+            log_lobbies(gameCode)
+
+        }
+    }
+}
+// pour definir le temps attribué au joueur là
+function setTimer(gameCode) {
+    if (lobbies[gameCode].timer) {
+        clearTimeout(lobbies[gameCode].timer);
+    }
+    const timerDuration = 10000; // (10 secondes)
+    lobbies[gameCode].timer = setTimeout(() => {
+        handleTimerEnd(gameCode);
+    }, timerDuration);
+    lobbies[gameCode].Joueurs.forEach(player => {
+        player.ws.send(JSON.stringify({ type: "timer", timer: timerDuration }));    
+    });
 }
 
 
 
 
 
-
-
-
-
-
-
-            // case 'disconnect_user':
-            //     if (lobbies[data.roomCode]) {
-            //         lobbies[data.roomCode] = lobbies[data.roomCode].filter(user => user.uuid !== data.uuid);
-
-            //         // Si la salle est vide après la déconnexion, supprimer la salle
-            //         if (lobbies[data.roomCode].length === 0) {
-            //             delete lobbies[data.roomCode];
-            //         }
-
-            //         sendUserList(ws, data.roomCode);
-            //     }
-            //     break;
-
-            // case 'request_game_users':
-            //     const roomCode = data.gameCode;
-            //     let room = rooms[roomCode] || { users: [], theme: '' };
-            //     ws.send(JSON.stringify({ type: 'game_users', users: room.users.map(user => ({ username: user.username, avatar: user.avatar, uuid: user.uuid })), theme: room.theme }));
-            //     break;
-
-            // case 'looser':
-            //     const gameCode = data.gameCode;
-            //     const username = data.username;
-            //     const actualRoom = rooms[gameCode];
-            
-            
-            //     if (actualRoom) {
-            //         const deadIndex = actualRoom.currentPlayerIndex;
-            //         actualRoom.users[deadIndex].state = "dead";
-                                    
-            //         do {  // cherche l'index du prochain joueur en vie
-            //             actualRoom.currentPlayerIndex = (actualRoom.currentPlayerIndex + 1) % actualRoom.users.length;
-            //         } while (actualRoom.users[actualRoom.currentPlayerIndex].state === "dead");
-                    
-            //         if (check_victory(gameCode)) {
-            //             let aliveUsers = actualRoom.users.filter(user => user.state === "alive");
-            //             let deadUsers = actualRoom.users.filter(user => user.state === "dead");
-                    
-            //             broadcast(JSON.stringify({
-            //                 type: 'solo_win',
-            //                 chief_uuid: actualRoom.users[0].uuid,
-            //                 username: aliveUsers[0].username,
-            //                 avatar: aliveUsers[0].avatar,
-            //                 loserAvatars: deadUsers.map(user => user.avatar), // Liste des avatars des loosers
-            //                 gameCode: gameCode,
-            //             }));
-            //         }
-            //         else{
-            //             broadcast(JSON.stringify({
-            //                 type: 'kill',
-            //                 index: deadIndex,
-            //                 gameCode: gameCode,
-            //                 currentPlayer: actualRoom.users[actualRoom.currentPlayerIndex].username
-            //             }));
-            //             }
-            //     }
-            //     break; 
 
 
 wss.on('error', (error) => {

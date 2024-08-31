@@ -103,6 +103,9 @@ export default {
         case 'timer':
           this.startCountdown(data.timer);
           break;
+        case 'kill':
+          this.playersList[data.indexKilledPlayer].state = 'dead';
+          break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
           break;
