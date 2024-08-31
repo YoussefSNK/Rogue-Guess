@@ -227,8 +227,27 @@ export default {
       }
     },
     getRandomColor() {
-      const randomColor = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
-      return randomColor;
+      // const randomColor = `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
+      // return randomColor;
+      const colors = [
+      '#FF4C4C', // Rouge vif
+      '#FFA500', // Orange
+      '#FFFF66', // Jaune
+      '#32CD32', // Vert lime
+      '#00BFFF', // Bleu ciel
+      '#4169E1', // Bleu roi
+      '#FF69B4', // Rose vif
+      '#8A2BE2', // Violet
+      '#40E0D0', // Turquoise
+      '#FF00FF'  // Magenta
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
+    },
+    getOpacity() {
+      const opacity = Math.random() * 0.9 + 0.1; // Génère un nombre entre 0.1 et 1
+      return opacity;
     },
     startCountdown(milliseconds) {
       if (this.countdownInterval) {
