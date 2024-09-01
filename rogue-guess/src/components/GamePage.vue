@@ -4,10 +4,8 @@
     <div class="theme" id="theme">{{ theme }}</div>
     <div class="timer" id="timer"></div>
     <div class="game-container">
-        <div class="theme" id="theme"></div>
         <div class="turn-info" id="turn-info"></div>
-        <div class="timer" id="timer"></div>
-        <div class="center">
+            <div class="center">
             <label for="game-input" class="sr-only"></label>
             <input
                 type="text"
@@ -53,12 +51,11 @@ export default {
       theme: "",
       inputText: '',
       inputDisabled: true,
-      angleOffset: 0, // Décalage angulaire pour l'animation de rotation
       gameEnded: false, // État pour savoir si le jeu est terminé
       winners: [] // Liste des gagnants
     };
   },
-  mounted() {
+  mounted() {    
     if (this.$socket.readyState !== WebSocket.OPEN) {
       // Si la connexion WebSocket n'est pas ouverte, redirige vers la page d'accueil
       console.warn("WebSocket n'est pas ouvert, redirection vers la page d'accueil");
@@ -67,7 +64,7 @@ export default {
     }
     this.$socket.addEventListener('message', this.handleSocketMessage);
     try {
-    this.$socket.send(JSON.stringify({ type: 'player_arrived', message: 'Player has arrived' }));
+      this.$socket.send(JSON.stringify({ type: 'player_arrived', message: 'Player has arrived' }));
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message via WebSocket:', error);
       this.$router.push('/');
@@ -76,7 +73,7 @@ export default {
   methods: {
     handleSocketMessage(event) {
       const data = JSON.parse(event.data);
-      console.log(data);
+      // console.log(data);
 
       switch (data.type) {
         case 'request_game_users':
@@ -92,13 +89,10 @@ export default {
           console.log(data.message);
           this.inputText = data.message;
           break;
-
         case 'your_turn':
-          console.log('your_turn');
           this.handleYourTurn();
           break;
         case 'not_your_turn':
-          console.log('not_your_turn');
           this.handleNotYourTurn();
           break;
         case 'good_answer':
@@ -108,7 +102,7 @@ export default {
         case 'end_of_list':
           this.addBackgroundImage(data.entity);
           this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
-          this.createConfetti();
+          this.createConfetti();          
           break;
         case 'solo_win':
           this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
@@ -126,12 +120,10 @@ export default {
       }
     },
     handleInput(event) {
-      if (this.currentPlayer === this.username) {
-        this.$socket.send(JSON.stringify({
-          type: 'text_update',
-          text: event.target.value,
-        }));
-      }
+      this.$socket.send(JSON.stringify({
+        type: 'text_update',
+        text: event.target.value,
+      }));
     },
     handleKeyDown(event) {
       if (event.key === 'Enter') {
@@ -187,7 +179,7 @@ export default {
 
       const duration = 250;
       const startTime = performance.now();
-
+      
       const stepAnimation = (timestamp) => {
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -199,7 +191,7 @@ export default {
         });
 
         this.$forceUpdate();
-
+        
         if (progress < 1) {
           requestAnimationFrame(stepAnimation);
         }
@@ -210,8 +202,7 @@ export default {
     getAvatarStyle(player) { // se fait chaque fois qu'un truc de playerList change (à chaque rotation du coup)
       const container = this.$refs.avatarContainer;
       const center = { x: container.clientWidth / 2, y: container.clientHeight / 2 };
-      const radius = 250;
-      const angleStep = 2 * Math.PI / this.alivePlayers.length;
+      const radius = 250;  
       const startAngle = -Math.PI / 2; // Commence à partir du haut au lieu du bas
       const angle = startAngle + player.angleOffset;
       const x = center.x + radius * Math.cos(angle);
@@ -331,12 +322,11 @@ export default {
   },
   beforeUnmount() {
     this.$socket.removeEventListener('message', this.handleSocketMessage);
-    this.$socket.off('request_game_users');
   }
 };
 </script>
 
-<style>
+<style> 
 
 #background {
     position: fixed;
@@ -346,8 +336,8 @@ export default {
     height: 100%;
     z-index: -1; /* Derrière tout le reste */
     display: grid;
-    grid-template-columns: repeat(auto-fill, 100px); /* Ajustez la taille de la colonne si nécessaire */
-    grid-auto-rows: 100px; /* Ajustez la hauteur de la ligne si nécessaire */
+    grid-template-columns: repeat(auto-fill, 100px);
+    grid-auto-rows: 100px;
 }
 
 .background-image {
@@ -356,7 +346,6 @@ export default {
     opacity: 0.5; /* Transparence pour voir les autres images */
     transition: opacity 0.5s ease-in-out;
 }
-
 .game-container {
     display: flex;
     justify-content: center;
@@ -367,7 +356,6 @@ export default {
     flex-direction: column;
     z-index: 1; /* Devant le fond */
 }
-
 .center {
     position: absolute;
     top: 50%;
@@ -375,7 +363,6 @@ export default {
     transform: translate(-50%, -50%);
     text-align: center;
 }
-
 .center input {
     display: block;
     margin: 0 auto;
@@ -464,15 +451,12 @@ export default {
     z-index: 10;
     /* Supprimer opacity ici */
 }
-
-
 .winner-list {
     display: flex;
     justify-content: center;
     gap: 20px;
     margin-top: 20px;
 }
-
 .winner-avatar {
     width: 150px;
     height: 150px;
@@ -485,7 +469,6 @@ export default {
     animation: spin-border 3s linear infinite;
     box-sizing: border-box; /* Inclure la bordure dans la taille */
 }
-
 @keyframes spin-border {
     0% {
         transform: rotate(0deg);

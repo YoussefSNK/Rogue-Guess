@@ -85,7 +85,6 @@ wss.on('connection', (ws) => {
                 handleStartGame(data, ws);
                 break;
             case 'player_arrived':
-                console.log("1 Joueur est arrivé !");
                 handlePlayerArrived(data, ws);
                 break;
             case 'text_update':
@@ -161,8 +160,6 @@ function handleCreateRoom(userInfo, ws) {
         alivePlayersID: []
     };
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
-    console.log(`Game created with code: ${gameCode}`);
-    console.log(lobbies)
 }
 function handleJoinRoom(userInfo, ws) {
     const { gameCode } = userInfo;
@@ -228,6 +225,13 @@ function handleChatMessage(msg, ws) {
         });
     }
 }
+
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------- Les fonctions in game ----------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
 // la fonction doit envoyer un socket à tous les joueurs du lobby pour qu'ils aillent sur la game
 // générer la liste à partir de la bdd
 function handleStartGame(data, ws) {
@@ -256,10 +260,6 @@ function handleStartGame(data, ws) {
         lobbies[gameCode].alivePlayersID = Array.from({ length: lobbies[gameCode].Joueurs.length }, (v, i) => i); //rempli alivePlayersID des index de tout le monde
     }
 }
-            //                 rooms[gameCode] = {
-            //                     users: lobbies[data.roomCode].slice(),
-            //                     theme: theme,
-            //                     turnEndTime: Date.now() + 5000
 
 function handlePlayerArrived(data, ws) {
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
@@ -304,20 +304,16 @@ function handleTextUpdate(data, ws) {
 function handleSendAnswer(data, ws) {
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
     if (gameCode && lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].ws == ws) {
-        
+    
         const message = JSON.stringify({  // vider l'input de tout le monde
-            type: 'text_update',
+            type: 'text_update', 
             message: ''})
         lobbies[gameCode].Joueurs.forEach(player => {
             player.ws.send(message);
         });
-
-
-
         for (let i = lobbies[gameCode].entities.length - 1; i >= 0; i--) {
             if (lobbies[gameCode].entities[i] === data.text) {  //dans le cas où la réponse est bonne
                 lobbies[gameCode].entities.splice(i, 1);
-
                 if (lobbies[gameCode].entities.length != 0){
                     lobbies[gameCode].Joueurs.forEach(player => {
                         player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
@@ -332,8 +328,7 @@ function handleSendAnswer(data, ws) {
                         
                     })
                 }
-
-
+                
                 changeToNextPlayer(gameCode)
                 setTimer(gameCode)
                 break;
@@ -350,7 +345,6 @@ function changeToNextPlayer(gameCode){
     const prochainIndex = (indexActuel + 1) % vivants.length;
 
     lobbies[gameCode].auTourDe = vivants[prochainIndex];
-
     lobbies[gameCode].Joueurs.forEach((player, index) => {
         if (index === lobbies[gameCode].auTourDe) {
             player.ws.send(JSON.stringify({ type: "your_turn" }));
@@ -365,22 +359,14 @@ function changeToNextPlayer(gameCode){
 // quand le time arrive à sa fin -> tue le joueur
 function handleTimerEnd(gameCode) {
     if (lobbies[gameCode]) {
-
         // si ils sont pas que 2
         if (lobbies[gameCode].alivePlayersID.length != 2){
-
-            log_lobbies(gameCode)
-
-
-            
             const oldAuTourDe = lobbies[gameCode].auTourDe
             console.log("Le joueur", oldAuTourDe+1, lobbies[gameCode].Joueurs[oldAuTourDe].name, "a été éliminé")
-
-            // chercher le joueur d'après tout de suite
             const vivants = lobbies[gameCode].alivePlayersID;
             const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
             const prochainIndex = (indexActuel + 1) % vivants.length;            
-            
+
             lobbies[gameCode].auTourDe = vivants[prochainIndex];
             lobbies[gameCode].Joueurs.forEach((player, index) => {
                 if (index === lobbies[gameCode].auTourDe) {
@@ -394,21 +380,10 @@ function handleTimerEnd(gameCode) {
             console.log(`oldAuTourDe = ${oldAuTourDe}, lobbies[gameCode].alivePlayersID = ${lobbies[gameCode].alivePlayersID}`)
             lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].alivePlayersID.indexOf(oldAuTourDe), 1) // on retire le joueur de la la liste d'index alivePlayersID
             lobbies[gameCode].Joueurs[oldAuTourDe].state = "dead" // le state du joueur devient dead
-
-            //   vvvvvvvvvvvvvvvvvvvv
-
             setTimer(gameCode)
-
-
             lobbies[gameCode].Joueurs.forEach(player => {
                 player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: oldAuTourDe, alivePlayers: lobbies[gameCode].alivePlayersID, auTourDe: lobbies[gameCode].auTourDe}));
             })
-
-
-
-            log_lobbies(gameCode)
-
-
         }
         else{ // CE CAS N'EST PEUT ÊTRE PAS A JOUR
             log_lobbies(gameCode)
@@ -452,26 +427,15 @@ function setTimer(gameCode) {
 
 
 
-
-
 wss.on('error', (error) => {
     console.error('Erreur WebSocket Server:', error);
 });
 
+function log_lobbies(gameCode){
+    console.log("--------------------------------")
+    for (let i = 0; i < lobbies[gameCode].Joueurs.length; i++) {
+        console.log("Joueur", i+1, ":", lobbies[gameCode].Joueurs[i].name, lobbies[gameCode].Joueurs[i].state);   
 
-
-
-
-
-function check_victory(roomCode){ // vérifie si la game est win, si oui elle return true
-    const room = rooms[roomCode];
-    const aliveUsers = room.users.filter(user => user.state === "alive");
-
-    if (aliveUsers.length === 1) {
-        const winner = aliveUsers[0];
-        console.log(`Victoire de ${winner.username} !`);
-        console.log(`Avatar : ${winner.avatar}`);
-        return true;
     }
 }
 
