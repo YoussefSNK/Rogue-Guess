@@ -47,6 +47,7 @@
 export default {
   data() { /* eslint-disable */
     return {
+      playersList: [], // Liste des joueurs en vie
       remainingTime: 0,      
       countdownInterval: null,
       theme: "",
@@ -117,6 +118,7 @@ export default {
           break;
         case 'kill':
           this.playersList[data.indexKilledPlayer].state = 'dead';
+          this.animateDecrease(this.playersList, data.alivePlayers, data.auTourDe);
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
