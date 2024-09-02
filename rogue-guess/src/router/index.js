@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../components/HomePage.vue';
 import RoomPage from '../components/RoomPage.vue';
 import GamePage from '../components/GamePage.vue';
+import FormPage from '../components/FormPage.vue';
 
 const routes = [
   {
@@ -22,6 +23,13 @@ const routes = [
     name: 'Game',
     component: GamePage,
     meta: { title: 'Game de con' },
+    props: true,
+  },
+  {
+    path: '/formulaire',
+    name: 'Form',
+    component: FormPage,
+    meta: { title: 'Formulaire' },
     props: true,
   }
 ];

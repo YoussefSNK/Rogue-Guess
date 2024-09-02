@@ -12,7 +12,16 @@ const cors = require('cors');
 
 const port = process.env.PORT || 3000;
 
-// const db = require('./app/database/database');
+
+
+// Middleware
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(bodyParser.json());
+app.use(cors({origin: 'http://localhost:8080'}));
+  
+
 
 const logRoutes = require('./app/routes/logRoutes');
 const dbRoutes = require('./app/routes/dbRoutes');
@@ -29,36 +38,18 @@ process.on('uncaughtException', (err) => {
 app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
 
-// Middleware
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cors({origin: 'http://localhost:8080'}));
-  
+
 // Routes
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-app.get('/chat', (req, res) => {
-
-    if (!lobbies[req.query.gameCode]) {
-        res.redirect('/');
-        return;
-    }
-
-    res.render('chat', { gameCode: req.query.gameCode });
+app.post('/formulaire', (req, res) => {
+    dbController.createFormEntry(req, res);
 });
-
-
-app.get('/formulaire', (req, res) => {res.render('formulaire');});
-app.post('/formulaire', dbController.createFormEntry);
-app.get('/game', (req, res) => {res.render('game', { gameCode: req.query.gameCode });});
 
 app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
-
-// let rooms = {};
 
 let lobbies = {};
 
