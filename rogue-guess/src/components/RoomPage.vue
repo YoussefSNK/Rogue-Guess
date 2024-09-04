@@ -289,11 +289,10 @@ export default {
     grid-column: 1 / 4;
     grid-row: 1 / 3;
     background-color: #34495e;
-    padding: 20px;
+    padding: 60px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    justify-content: space-between;
-    gap: 50px;
+    gap: 100px;
     align-items: flex-start;
     border-radius: 15px;
 }
@@ -303,29 +302,28 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     padding: 10px;
     background-color: #18222c;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%;
 }
 
-:deep(.red .image-card img) {
-    max-width: 100px;
+:deep(.red .image-card img) { /* correspond à l'image des thèmes */
+    max-width: 100px; /*verouille la taille max*/
     max-height: 100px;
     border-radius: 8px;
     transition: transform 0.2s ease-in-out;
 }
 
-:deep(.red .image-container img:hover) {transform: scale(1.1);}
+:deep(.red .image-card img:hover) {transform: scale(1.1);}
 
-:deep(.red .image-container h3) {
+/* :deep(.red .image-card h3) {
     font-size: 14px;
     margin-top: 10px;
     text-align: center;
     width: 100%;
-}
+} */
 
 .green {
     grid-column: 1 / 1;
