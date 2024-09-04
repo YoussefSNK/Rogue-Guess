@@ -489,18 +489,56 @@ function insertInitialData() {
     ("Mewtwo", "Pokémon 1G", "Mewtwo.png"),
     ("Mew", "Pokémon 1G", "Mew.png"),
 
+    ("Amsterdam", "Capitales Europe", "Amsterdam.png"),
+    ("Andorre-la-Vieille", "Capitales Europe", "Andorre-la-Vieille.png"),
+    ("Athènes", "Capitales Europe", "Athènes.png"),
+    ("Belgrade", "Capitales Europe", "Belgrade.png"),
+    ("Berlin", "Capitales Europe", "Berlin.png"),
+    ("Berne", "Capitales Europe", "Berne.png"),
+    ("Bratislava", "Capitales Europe", "Bratislava.png"),
+    ("Bruxelles", "Capitales Europe", "Bruxelles.png"),
+    ("Bucarest", "Capitales Europe", "Bucarest.png"),
+    ("Budapest", "Capitales Europe", "Budapest.png"),
+    ("Chisinau", "Capitales Europe", "Chisinau.png"),
+    ("Copenhague", "Capitales Europe", "Copenhague.png"),
+    ("Dublin", "Capitales Europe", "Dublin.png"),
+    ("Helsinki", "Capitales Europe", "Helsinki.png"),
+    ("Kiev", "Capitales Europe", "Kiev.png"),
+    ("La Valette", "Capitales Europe", "La Valette.png"),
+    ("Lisbonne", "Capitales Europe", "Lisbonne.png"),
+    ("Ljubljana", "Capitales Europe", "Ljubljana.png"),
+    ("Londres", "Capitales Europe", "Londres.png"),
+    ("Luxembourg", "Capitales Europe", "Luxembourg.png"),
+    ("Madrid", "Capitales Europe", "Madrid.png"),
+    ("Minsk", "Capitales Europe", "Minsk.png"),
+    ("Monaco", "Capitales Europe", "Monaco.png"),
+    ("Moscou", "Capitales Europe", "Moscou.png"),
+    ("Nicosie", "Capitales Europe", "Nicosie.png"),
+    ("Oslo", "Capitales Europe", "Oslo.png"),
+    ("Paris", "Capitales Europe", "Paris.png"),
+    ("Podgorica", "Capitales Europe", "Podgorica.png"),
+    ("Prague", "Capitales Europe", "Prague.png"),
+    ("Pristina", "Capitales Europe", "Pristina.png"),
+    ("Reykjavik", "Capitales Europe", "Reykjavik.png"),
+    ("Riga", "Capitales Europe", "Riga.png"),
+    ("Rome", "Capitales Europe", "Rome.png"),
+    ("Saint-Marin", "Capitales Europe", "Saint-Marin.png"),
+    ("Sarajevo", "Capitales Europe", "Sarajevo.png"),
+    ("Skopje", "Capitales Europe", "Skopje.png"),
+    ("Sofia", "Capitales Europe", "Sofia.png"),
+    ("Stockholm", "Capitales Europe", "Stockholm.png"),
+    ("Tallinn", "Capitales Europe", "Tallinn.png"),
+    ("Tirana", "Capitales Europe", "Tirana.png"),
+    ("Vaduz", "Capitales Europe", "Vaduz.png"),
+    ("Varsovie", "Capitales Europe", "Varsovie.png"),
+    ("Vatican", "Capitales Europe", "Vatican.png"),
+    ("Vienne", "Capitales Europe", "Vienne.png"),
+    ("Vilnius", "Capitales Europe", "Vilnius.png"),
+    ("Zagreb", "Capitales Europe", "Zagreb.png")
 
 
     
-    ("1", "Test", "1.png"),
-    ("2", "Test", "2.png"),
-    ("3", "Test", "3.png"),
-    ("4", "Test", "4.png"),
-    ("5", "Test", "5.png"),
-    ("6", "Test", "6.png"),
-    ("7", "Test", "7.png"),
-    ("8", "Test", "8.png"),
-    ("9", "Test", "9.png")
+
     
     ;
   `;
@@ -510,7 +548,7 @@ function insertInitialData() {
     ("Joueurs de Raimon", "SELECT Name FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
     ("Champions de League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
     ("Pokémon 1G", "SELECT Name FROM Entity WHERE Licence = 'Pokémon 1G'", "pokemon.png"),
-    ("Valeurs de test", "SELECT Name FROM Entity WHERE Licence = 'Test'", "Les valeurs sont 1 et 2.png")
+    ("Capitales Européennes", "SELECT Name FROM Entity WHERE Licence = 'Capitales Europe'", "Capitales.png")
     ;
   `;
 
