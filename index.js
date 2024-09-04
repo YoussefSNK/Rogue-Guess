@@ -385,7 +385,8 @@ function handleTimerEnd(gameCode) {
             lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].state = "dead" // le state du joueur devient dead
 
             lobbies[gameCode].Joueurs.forEach(player => {
-                player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: lobbies[gameCode].auTourDe}));
+                player.ws.send(JSON.stringify({type: "last_kill", indexKilledPlayer: lobbies[gameCode].auTourDe}));
+                clearTimeout(lobbies[gameCode].timer); 
             })
 
 
