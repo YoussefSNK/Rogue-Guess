@@ -291,11 +291,11 @@ export default {
     background-color: #34495e;
     padding: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Utilise auto-fill pour remplir l'espace */
-    gap: 20px; /* Espacement entre les éléments */
-    justify-items: center; /* Centre les éléments horizontalement */
-    align-items: flex-start; /* Aligne les éléments en haut */
-    border-radius: 15px; /* Arrondit les coins de la grille */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    justify-content: space-between;
+    gap: 50px;
+    align-items: flex-start;
+    border-radius: 15px;
 }
 
 :deep(.red .image-card) {
@@ -303,12 +303,12 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     padding: 10px;
-    background-color: #979797;
-    border-radius: 10px; /* Arrondit les coins de chaque carte */
+    background-color: #18222c;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%; /* Force la carte à remplir l'espace disponible */
+    width: 100%;
 }
 
 :deep(.red .image-card img) {
@@ -324,16 +324,14 @@ export default {
     font-size: 14px;
     margin-top: 10px;
     text-align: center;
-    width: 100%; /* Limite la largeur du titre */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap; /* Empêche le débordement de texte */
+    width: 100%;
 }
 
 .green {
     grid-column: 1 / 1;
     grid-row: 3 / 3;
-    background-color: green;
+    background-color: #18222c;
+    border-radius: 5%;
 }
 
 .blue {
@@ -355,7 +353,7 @@ export default {
     grid-column: 4 / 4;
     grid-row: 1 / 4;
     /* background-color: #f1c40f; */
-    background-color: #2c3e50;
+    background-color: #18222c;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -394,7 +392,7 @@ export default {
 
 :deep(.player:hover) {
     transform: translateY(-5px);
-    background-color: #3E5771;
+    background-color: #222f3d;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
