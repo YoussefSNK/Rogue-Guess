@@ -25,6 +25,9 @@ function createTables() {
   const dropTablesQueryForm = `
     DROP TABLE IF EXISTS Form;
   `;
+  const dropTablesQueryChronoEntity = `
+    DROP TABLE IF EXISTS ChronoEntity;
+  `;
   const createTableQueryLogs = `
     CREATE TABLE IF NOT EXISTS Logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,75 +60,53 @@ function createTables() {
     );
   `;
 
-  db.serialize(() => {
-    // Supprimer les tables existantes
-    db.run(dropTablesQueryLogs, (err) => {
-      if (err) {
-        console.error('Erreur lors de la suppression des logs :', err.message);
-      } else {
-        console.log('Tables Logs supprimée avec succès.');
-
-        db.run(dropTablesQueryEntity, (err) => {
-          if (err) {
-            console.error('Erreur lors de la suppression des entités :', err.message);
-          } else {
-            console.log('Table Entity supprimée avec succès.');
-
-            db.run(dropTablesQueryRequest, (err) => {
-              if (err) {
-                console.error('Erreur lors de la suppression des requêtes :', err.message);
-              } else {
-                console.log('Table Request supprimée avec succès.');
 
 
-                db.run(dropTablesQueryForm, (err) => {
-                  if (err) {
-                    console.error('Erreur lors de la suppression des formulaires :', err.message);
-                  } else {
-                    console.log('Table Form supprimée avec succès.');
-  
-                    db.run(createTableQueryLogs, (err) => {
-                      if (err) {
-                        console.error('Erreur lors de la création de la table Logs :', err.message);
-                      } else {
-                        console.log('Table Logs créée avec succès.');
-
-                        db.run(createTableQueryEntity, (err) => {
-                          if (err) {
-                            console.error('Erreur lors de la création de la table Entity :', err.message);
-                          } else {
-                            console.log('Table Entity créée avec succès.');
-
-                            db.run(createTableQueryRequest, (err) => {
-                              if (err) {
-                                console.error('Erreur lors de la création de la table Request :', err.message);
-                              } else {
-                                console.log('Table Request créée avec succès.');
 
 
-                                db.run(createTableQueryForm, (err) => {
-                                  if (err) {
-                                    console.error('Erreur lors de la création de la table Form :', err.message);
-                                  } else {
-                                    console.log('Table Form créée avec succès.');
 
-                                    insertInitialData();
-                                  }
-                                });
-                              }
-                            });
-                          }
-                        });
-                      }
-                    });
-                  }
-                });
-              }
-            });
-          }
-        });
-      }
+
+
+
+
+  const runQuery = (query, successMessage, errorMessage) => {
+    return new Promise((resolve, reject) => {
+      db.run(query, (err) => {
+        if (err) {
+          console.error(`${errorMessage} :`, err.message);
+          reject(err);
+        } else {
+          console.log(successMessage);
+          resolve();
+        }
+      });
     });
+  };
+  
+  const processDatabase = async () => {
+    try {
+      // Supprimer les tables existantes
+      await runQuery(dropTablesQueryLogs, 'Tables Logs supprimée avec succès.', 'Erreur lors de la suppression des logs');
+      await runQuery(dropTablesQueryEntity, 'Table Entity supprimée avec succès.', 'Erreur lors de la suppression des entités');
+      await runQuery(dropTablesQueryRequest, 'Table Request supprimée avec succès.', 'Erreur lors de la suppression des requêtes');
+      await runQuery(dropTablesQueryForm, 'Table Form supprimée avec succès.', 'Erreur lors de la suppression des formulaires');
+  
+      // Créer les nouvelles tables
+      await runQuery(createTableQueryLogs, 'Table Logs créée avec succès.', 'Erreur lors de la création de la table Logs');
+      await runQuery(createTableQueryEntity, 'Table Entity créée avec succès.', 'Erreur lors de la création de la table Entity');
+      await runQuery(createTableQueryRequest, 'Table Request créée avec succès.', 'Erreur lors de la création de la table Request');
+      await runQuery(createTableQueryForm, 'Table Form créée avec succès.', 'Erreur lors de la création de la table Form');
+    
+      // Insérer les données initiales
+      insertInitialData();
+  
+    } catch (err) {
+      console.error('Une erreur s\'est produite lors du traitement de la base de données :', err);
+    }
+  };
+  // Exécuter la séquence
+  db.serialize(() => {
+    processDatabase();
   });
 }
 
@@ -165,6 +146,7 @@ function insertInitialData() {
     ("Archer Hawkins", "Inazuma Eleven", "Archer Hawkins.png"),
     ("Thor Stoutberg", "Inazuma Eleven", "Thor Stoutberg.png"),
     ("Austin Hobbes", "Inazuma Eleven", "Austin Hobbes.png"),
+
     ("Aatrox", "League of legends", "Aatrox.png"),
     ("Ahri", "League of legends", "Ahri.png"),
     ("Akali", "League of legends", "Akali.png"),
@@ -228,8 +210,6 @@ function insertInitialData() {
     ("Kayle", "League of legends", "Kayle.png"),
     ("Kayn", "League of legends", "Kayn.png"),
     ("Kennen", "League of legends", "Kennen.png"),
-        
-        
     ("Kha'Zix", "League of legends", "Kha'Zix.png"),
     ("Kindred", "League of legends", "Kindred.png"),
     ("Kled", "League of legends", "Kled.png"),
@@ -546,7 +526,7 @@ function insertInitialData() {
   const insertQueryRequest = `
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
     ("Joueurs de Raimon", "SELECT Name FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
-    ("Champions de League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
+    ("League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
     ("Pokémon 1G", "SELECT Name FROM Entity WHERE Licence = 'Pokémon 1G'", "pokemon.png"),
     ("Capitales Européennes", "SELECT Name FROM Entity WHERE Licence = 'Capitales Europe'", "Capitales.png")
     ;
