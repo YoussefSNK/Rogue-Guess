@@ -33,7 +33,7 @@
     <Transition name="slide-fade">
         <div v-if="gameEnded" class="end-screen">
             <h1>Fin de partie !</h1>
-            <p>Écran pourri à changer</p>
+            <p>Écran à changer</p>
             <div class="winner-list">
                 <img v-for="winner in winners" :key="winner.id" :src="winner.avatar" class="winner-avatar" alt="Winner Avatar">
             </div>
@@ -97,15 +97,16 @@ export default {
           break;
         case 'good_answer':
           this.addBackgroundImage(data.entity);
-          this.animateRotation(Math.PI * 2 / this.playersList.filter(player => player.state === "alive").length,      this.playersList          );
+          this.animateRotation(Math.PI * 2 / this.playersList.filter(player => player.state === "alive").length, this.playersList);
           break;
         case 'end_of_list':
           this.addBackgroundImage(data.entity);
           this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
-          this.createConfetti();          
+          this.createConfetti();
           break;
         case 'solo_win':
           this.handleGameEnd(this.playersList.filter(player => player.state === "alive"));
+          this.createConfetti();
           break;
         case 'timer':
           this.startCountdown(data.timer);
@@ -113,6 +114,9 @@ export default {
         case 'kill':
           this.playersList[data.indexKilledPlayer].state = 'dead';
           this.animateDecrease(this.playersList, data.alivePlayers, data.auTourDe);
+          break;
+        case 'last_kill':
+          this.playersList[data.indexKilledPlayer].state = 'dead';
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
