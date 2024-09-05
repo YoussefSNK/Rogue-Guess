@@ -74,7 +74,6 @@ export default {
       }
     },
     createGame() {
-      // localStorage.setItem('currentIndex', currentIndex.toString());
       const userInfo = { username: this.name, avatar: this.currentAvatar.src, uuid: this.uuidv4(), state: 'alive' };
       this.$socket.send(JSON.stringify({ type: 'create_room', userInfo }));
     },
@@ -158,6 +157,14 @@ h1 {
   color: #fff; /* Changer la couleur du texte en blanc */
 }
 
+a {
+  color: #0d6654;
+}
+
+a:hover {
+  color: #1abc9c;
+}
+
 label {
   display: block;
   margin-bottom: 10px;
@@ -212,13 +219,13 @@ input[type="text"] {
 }
 
 .arrow:hover {
-  color: #007BFF; /* Changer la couleur au survol */
+  color: #1abc9c; /* Changer la couleur au survol */
 }
 
 .button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #1abc9c; /* background-color: #007bff; */
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -227,7 +234,7 @@ input[type="text"] {
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #0d6654;
 }
 
 @keyframes float {
