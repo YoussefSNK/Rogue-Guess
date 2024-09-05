@@ -10,7 +10,10 @@
                 @image-clicked="handleImageClick"
               />
             </div>
-            <div class="green">Logs</div>
+            <div class="green">
+              <button class="green-button" @click="copyRoomCode">Copier le code</button> <!-- Bouger ça de green à yellow-->
+              <p v-if="copied" style="color: #1abc9c;">Le code de la salle a été copié !</p>
+            </div>
             <div class="blue">
                 <div class="chat-container">
                     <div class="messages" id="messages"></div>
@@ -45,6 +48,7 @@ export default {
   },
   data() {
     return {
+      copied: false,
       images: [],
       messages: [],
       players: [], // Mise à jour pour stocker la liste des joueurs
@@ -139,6 +143,30 @@ export default {
         title
       }));
       console.log(`Image clicked: ${title}`);
+    },
+    copyRoomCode() {
+      const url = window.location.href;
+
+      const match = url.match(/\/room\/([a-zA-Z0-9]+)$/);
+      if (match && match[1]) {
+        const roomCode = match[1];
+
+        const tempInput = document.createElement('textarea');
+        tempInput.value = roomCode;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999); // askip pour mobile mais à voir
+
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+
+        this.copied = true;
+        setTimeout(() => {
+          this.copied = false;
+        }, 3000);
+      } else {
+        alert("Le code de la salle est introuvable dans l'URL !");
+      }
     }
   },
   beforeUnmount() {
@@ -330,6 +358,23 @@ export default {
     grid-row: 3 / 3;
     background-color: #18222c;
     border-radius: 5%;
+    display: grid;
+    place-items: center; /* Centre horizontalement et verticalement */
+}
+
+.green-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #1abc9c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.green-button:hover {
+  background-color: #0d6654;
 }
 
 .blue {
