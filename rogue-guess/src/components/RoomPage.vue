@@ -56,6 +56,11 @@ export default {
     };
   },
   mounted() {
+    if (this.$socket.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket n'est pas ouvert, redirection vers la page d'accueil");
+      this.$router.push('/'); // Redirige vers la page d'accueil, mais on peut ptetr changer ça pour rediriger vers une page d'accueil modifiée
+      return;
+    }
     this.$socket.addEventListener('message', this.handleSocketMessage);
     this.$socket.send(JSON.stringify({ type: 'ask_players', gameCode: this.gameCode }));
     this.loadListImages();
