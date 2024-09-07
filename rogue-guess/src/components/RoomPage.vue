@@ -75,14 +75,34 @@ export default {
     },
     addMessageToUI(msg) {
       const messages = document.getElementById('messages');
+      // Création de l'élément message
       const messageElement = document.createElement('div');
       messageElement.classList.add('message');
-      messageElement.innerHTML = `
-        <img src="${msg.avatar}" alt="Avatar" class="avatar"> 
-        <span>${msg.username}: ${msg.message}</span>`;
+      // Création de l'avatar
+      const avatarElement = document.createElement('img');
+      avatarElement.src = msg.avatar;
+      avatarElement.alt = 'Avatar';
+      avatarElement.classList.add('avatar');
+      // Création du contenu du message
+      const messageContent = document.createElement('div');
+      messageContent.classList.add('message-content');
+      // Nom d'utilisateur
+      const usernameElement = document.createElement('span');
+      usernameElement.classList.add('username');
+      usernameElement.textContent = msg.username;
+      // Texte du message
+      const textElement = document.createElement('span');
+      textElement.classList.add('message-text');
+      textElement.textContent = `: ${msg.message}`;
+      // Ajout des éléments au DOM
+      messageContent.appendChild(usernameElement);
+      messageContent.appendChild(textElement);
+      messageElement.appendChild(avatarElement);
+      messageElement.appendChild(messageContent);
       messages.appendChild(messageElement);
       messages.scrollTop = messages.scrollHeight;
     },
+
     sendMessage() {
       if (this.currentMessage.trim() !== '') {
         const messageData = {
