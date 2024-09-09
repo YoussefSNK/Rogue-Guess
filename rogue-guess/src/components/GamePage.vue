@@ -1,10 +1,12 @@
 <template>
     <div id="background" ref="background"></div>
     <div ref="confettiContainer" class="confetti-container"></div>
-    <div class="theme" id="theme">{{ theme }}</div>
-    <div class="timer" id="timer"></div>
-    <div class="game-container">
+    <div class="header">
+        <div class="theme" id="theme">{{ theme }}</div>
+        <div class="timer" id="timer"></div>
         <div class="turn-info" id="turn-info"></div>
+    </div>
+    <div class="game-container">
             <div class="center">
             <label for="game-input" class="sr-only"></label>
             <input
@@ -331,25 +333,44 @@ export default {
 </script>
 
 <style> 
-
+/* Le background (donc les images qui s'affichent derrière) */
 #background {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* Derrière tout le reste */
+    z-index: -1;
     display: grid;
     grid-template-columns: repeat(auto-fill, 100px);
     grid-auto-rows: 100px;
 }
-
 .background-image {
     width: 100%;
     height: 100%;
-    opacity: 0.5; /* Transparence pour voir les autres images */
+    opacity: 0.5;
     transition: opacity 0.5s ease-in-out;
 }
+
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 2;
+}
+.theme, .turn-info, .timer {
+    text-align: center;
+    font-size: 24px;
+    color: #ecf0f1;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+
 .game-container {
     display: flex;
     justify-content: center;
@@ -359,17 +380,14 @@ export default {
     position: relative;
     flex-direction: column;
     z-index: 1; /* Devant le fond */
+    box-sizing: border-box;
 }
 .center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     text-align: center;
 }
 .center input {
     display: block;
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 #game-input {
@@ -383,10 +401,10 @@ export default {
     position: absolute;
     top: 50%;
     left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
-    transform: translate(-50%, -50%);
-    pointer-events: none; /* Empêche les avatars d'interférer avec l'input */
+    pointer-events: none;
 }
 
 .circle-avatar {
@@ -394,51 +412,22 @@ export default {
     height: 100px;
     border-radius: 50%;
     position: absolute;
-    transition: transform 1s ease; /* Pour une rotation douce */
-    pointer-events: auto; /* Permet l'interaction avec les avatars si nécessaire */
+    transition: transform 1s ease; 
+    pointer-events: auto;
 }
 
 
 
 
-.theme, .turn-info, .timer {
-    text-align: center;
-    font-size: 24px;
-    color: #ecf0f1;
-    font-weight: bold;
-    margin: 10px 0;
-}
-
-
-
-
-/* .slide-fade-enter-active {
-  transition: all 3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
-} */
-
+/* || Fin de partie */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: opacity 2s ease;
 }
-
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   opacity: 0;
 }
-
-
-
-
 .end-screen {
     display: flex;
     flex-direction: column;
@@ -453,7 +442,6 @@ export default {
     left: 0;
     width: 100%;
     z-index: 10;
-    /* Supprimer opacity ici */
 }
 .winner-list {
     display: flex;
@@ -482,30 +470,23 @@ export default {
     }
 }
 
-
-
-
-
-
 .confetti-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* Empêche l'interaction avec les confettis */
+  pointer-events: none;
   overflow: hidden;
   z-index: 20;
 }
 
 .confetti {
   position: absolute;
-  /* opacity: 0.9; */
   transform: rotate(45deg);
-  animation: fall 3s linear infinite; /* Animation de la chute uniquement */
+  animation: fall 3s linear infinite;
 }
 
-/* Animation pour faire tomber les confettis */
 @keyframes fall {
   0% {
     top: -10px;
@@ -514,6 +495,5 @@ export default {
     top: 100%;
   }
 }
-
 
 </style>
