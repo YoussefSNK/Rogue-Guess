@@ -25,8 +25,8 @@ function createTables() {
   const dropTablesQueryForm = `
     DROP TABLE IF EXISTS Form;
   `;
-  const dropTablesQueryChronoEntity = `
-    DROP TABLE IF EXISTS ChronoEntity;
+  const dropTablesQueryPower = `
+    DROP TABLE IF EXISTS Power;
   `;
   const createTableQueryLogs = `
     CREATE TABLE IF NOT EXISTS Logs (
@@ -57,6 +57,14 @@ function createTables() {
       Title TEXT NOT NULL,
       Option TEXT NOT NULL,
       Text TEXT NOT NULL
+    );
+  `;
+  const createTableQueryPower = `
+    CREATE TABLE IF NOT EXISTS Power (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      Name TEXT NOT NULL,
+      Description TEXT NOT NULL,
+      Image TEXT NOT NULL
     );
   `;
 
@@ -90,12 +98,14 @@ function createTables() {
       await runQuery(dropTablesQueryEntity, 'Table Entity supprimée avec succès.', 'Erreur lors de la suppression des entités');
       await runQuery(dropTablesQueryRequest, 'Table Request supprimée avec succès.', 'Erreur lors de la suppression des requêtes');
       await runQuery(dropTablesQueryForm, 'Table Form supprimée avec succès.', 'Erreur lors de la suppression des formulaires');
+      await runQuery(dropTablesQueryPower, 'Table Power supprimée avec succès.', 'Erreur lors de la suppression des pouvoirs');
   
       // Créer les nouvelles tables
       await runQuery(createTableQueryLogs, 'Table Logs créée avec succès.', 'Erreur lors de la création de la table Logs');
       await runQuery(createTableQueryEntity, 'Table Entity créée avec succès.', 'Erreur lors de la création de la table Entity');
       await runQuery(createTableQueryRequest, 'Table Request créée avec succès.', 'Erreur lors de la création de la table Request');
       await runQuery(createTableQueryForm, 'Table Form créée avec succès.', 'Erreur lors de la création de la table Form');
+      await runQuery(createTableQueryPower, 'Table Power créée avec succès.', 'Erreur lors de la création de la table Power');
     
       // Insérer les données initiales
       insertInitialData();
@@ -538,6 +548,13 @@ function insertInitialData() {
     ("On voit pas le dernier perso annoncé", "4", "Lorsque le dernier personnage est cité il n'apparait pas derrière nous dans l'écran de victoire");
   `;
 
+  const insertQueryPower = `
+    INSERT INTO Power (Name, Description, Image) VALUES
+    ("Projet Voltaire", "Corrige vos réponses si il y a une seule faute", "power/Projet_Voltaire.png"),
+    ("Ange Gardien", "Te sauve la vie lors de ta première élimination", "power/Ange_Gardien.png"),
+    ("Goofillusion", "Cache parfois tes réponses", "power/Goofillusion.png");
+  `;
+
 
 
   db.serialize(() => {
@@ -571,6 +588,14 @@ function insertInitialData() {
         console.error('Erreur lors de l\'insertion des données initiales dans Request :', err.message);
       } else {
         console.log('Données des Request insérées avec succès.');
+      }
+    });
+
+    db.run(insertQueryPower, (err) => {
+      if (err) {
+        console.error('Erreur lors de l\'insertion des données initiales dans Power :', err.message);
+      } else {
+        console.log('Données des Power insérées avec succès.');
       }
     });
   });
