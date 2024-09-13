@@ -63,4 +63,17 @@ exports.getSQLByTheme = (theme, callback) => {
   });
 };
 
+// Récupérer toutes les données de la table Power (Name, Description, Image)
+exports.getAllPowerDataCallback = (callback) => {
+  const query = "SELECT Name, Description, Image FROM Power";
 
+  db.all(query, (err, rows) => {
+    if (err) {
+      console.error('Erreur lors de la récupération des données de Power:', err);
+      return callback(err, null);  // Envoie l'erreur au callback
+    }
+
+    // Si tout se passe bien, retourne les données au callback
+    callback(null, rows);
+  });
+};

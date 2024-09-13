@@ -136,6 +136,7 @@ function handleCreateRoom(userInfo, ws) {
 
     lobbies[gameCode] = {
         enCours: false,
+        perfectAnswer: true, //permettra de check si la réponse est parfaite (est true tant qu'une mauvaise réponse n'a pas été envoyée)
         auTourDe: null, //ce sera l'index du joueur dont c'est le tour
         theme: "",
         entities: [],
@@ -145,10 +146,13 @@ function handleCreateRoom(userInfo, ws) {
                 avatar: userInfo.avatar,
                 state: "alive",
                 ws: ws,                     // WebSocket associée
-                pouvoirs: []
+                pouvoirs: [],
+                total_score: 0,
+                score: 0
             }
         ],
-        alivePlayersID: []
+        alivePlayersID: [],
+        pouvoirs_dispo: []
     };
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
 }
@@ -161,7 +165,9 @@ function handleJoinRoom(userInfo, ws) {
             avatar: userInfo.avatar,
             state: 'alive',
             ws: ws,
-            pouvoirs: []
+            pouvoirs: [],
+            total_score: 0,
+            score: 0
         });
 
         ws.send(JSON.stringify({ type: 'room_joined', gameCode }));
@@ -238,10 +244,21 @@ function handleStartGame(data, ws) {
                     console.error('Erreur lors de la récupération des entités 2:', err);
                     return;
                 }
+
+                logController.getAllPowerDataCallback((err, powers) => {
+                    if (err) {
+                      console.log('Erreur lors de la recup des power:', err);
+                      return;
+                    }
+                  
                 lobbies[gameCode].entities = entities;
                 lobbies[gameCode].theme = data.title;
                 lobbies[gameCode].enCours = true;
+                    lobbies[gameCode].pouvoirs_dispo = powers;
+                  
+                    console.log(powers);
                 setTimer(gameCode);
+                  });
 
                 
             });
@@ -302,13 +319,31 @@ function handleSendAnswer(data, ws) {
         lobbies[gameCode].Joueurs.forEach(player => {
             player.ws.send(message);
         });
+
+        var isGoodAnswer = false
         for (let i = lobbies[gameCode].entities.length - 1; i >= 0; i--) {
             if (lobbies[gameCode].entities[i] === data.text) {  //dans le cas où la réponse est bonne
+                isGoodAnswer = true
+                if (lobbies[gameCode].perfectAnswer){
+                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].total_score += data.text.length
+                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].score += data.text.length
+                    checkScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], gameCode)
+                    console.log("\n[Pouvoirs restants] :")
+                    lobbies[gameCode].pouvoirs_dispo.forEach(pouvoir => {
+                        console.log(pouvoir.Name)
+                    })
+                    console.log("\n[Pouvoirs de", lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "]")
+                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.forEach(pouvoir => {
+                        console.log(pouvoir.Name)
+                    })
+                }
+
                 lobbies[gameCode].entities.splice(i, 1);
                 if (lobbies[gameCode].entities.length != 0){
                     lobbies[gameCode].Joueurs.forEach(player => {
                         player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
                         setTimer(gameCode)
+                        lobbies[gameCode].perfectAnswer = true;
                     });
                 }
                 else{
@@ -324,6 +359,13 @@ function handleSendAnswer(data, ws) {
                 setTimer(gameCode)
                 break;
             }
+            else {
+            }
+            // else if (){  le cas, si la réponse n'est pas parfaite, maintenant on vérifie avec projet voltaire
+            // }
+        }
+        if (!isGoodAnswer){
+            lobbies[gameCode].perfectAnswer = false;
         }
     }
 }
@@ -350,6 +392,7 @@ function changeToNextPlayer(gameCode){
 // quand le time arrive à sa fin -> tue le joueur
 function handleTimerEnd(gameCode) {
     if (lobbies[gameCode]) {
+        lobbies[gameCode].perfectAnswer = true;
         // si ils sont pas que 2
         if (lobbies[gameCode].alivePlayersID.length != 2){
             const oldAuTourDe = lobbies[gameCode].auTourDe
@@ -415,7 +458,20 @@ function setTimer(gameCode) {
     });
 }
 
+function checkScore(joueur, gameCode){
+    if (joueur.score > 10){
+        joueur.score -= 10
 
+        if (lobbies[gameCode].pouvoirs_dispo.length != 0){
+            // joueur.pouvoirs.push(lobbies[gameCode].pouvoirs.splice(Math.floor(Math.random() * lobbies[gameCode].pouvoirs.length), 1)) ça me ferait kiffer que la ligne ressemble à ça
+            const indexAleatoire = Math.floor(Math.random() * lobbies[gameCode].pouvoirs_dispo.length);
+            const [elementChoisi] = lobbies[gameCode].pouvoirs_dispo.splice(indexAleatoire, 1);
+            joueur.pouvoirs.push(elementChoisi)
+            joueur.ws.send(JSON.stringify({type: "gg", power: elementChoisi}))
+        }
+        console.log("dans checkScore", joueur.name, joueur.pouvoirs)
+    }
+}
 
 
 
