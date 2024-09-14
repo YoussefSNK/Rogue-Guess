@@ -410,54 +410,54 @@ function handleTimerEnd(gameCode) {
 
         // si pas de GA
         else{
-        // si ils sont pas que 2
-        if (lobbies[gameCode].alivePlayersID.length != 2){
-            const oldAuTourDe = lobbies[gameCode].auTourDe
-            console.log("Le joueur", oldAuTourDe+1, lobbies[gameCode].Joueurs[oldAuTourDe].name, "a été éliminé")
-            const vivants = lobbies[gameCode].alivePlayersID;
-            const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
-            const prochainIndex = (indexActuel + 1) % vivants.length;            
+            // si ils sont pas que 2
+            if (lobbies[gameCode].alivePlayersID.length != 2){
+                const oldAuTourDe = lobbies[gameCode].auTourDe
+                console.log("Le joueur", oldAuTourDe+1, lobbies[gameCode].Joueurs[oldAuTourDe].name, "a été éliminé")
+                const vivants = lobbies[gameCode].alivePlayersID;
+                const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
+                const prochainIndex = (indexActuel + 1) % vivants.length;            
 
-            lobbies[gameCode].auTourDe = vivants[prochainIndex];
-            lobbies[gameCode].Joueurs.forEach((player, index) => {
-                if (index === lobbies[gameCode].auTourDe) {
-                    player.ws.send(JSON.stringify({ type: "your_turn" }));
-                }
-                else{
-                    player.ws.send(JSON.stringify({ type: "not_your_turn" }));
-        
-                }
-            });
-            console.log(`oldAuTourDe = ${oldAuTourDe}, lobbies[gameCode].alivePlayersID = ${lobbies[gameCode].alivePlayersID}`)
-            lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].alivePlayersID.indexOf(oldAuTourDe), 1) // on retire le joueur de la la liste d'index alivePlayersID
-            lobbies[gameCode].Joueurs[oldAuTourDe].state = "dead" // le state du joueur devient dead
-            setTimer(gameCode)
-            lobbies[gameCode].Joueurs.forEach(player => {
-                player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: oldAuTourDe, alivePlayers: lobbies[gameCode].alivePlayersID, auTourDe: lobbies[gameCode].auTourDe}));
-            })
-        }
+                lobbies[gameCode].auTourDe = vivants[prochainIndex];
+                lobbies[gameCode].Joueurs.forEach((player, index) => {
+                    if (index === lobbies[gameCode].auTourDe) {
+                        player.ws.send(JSON.stringify({ type: "your_turn" }));
+                    }
+                    else{
+                        player.ws.send(JSON.stringify({ type: "not_your_turn" }));
+            
+                    }
+                });
+                console.log(`oldAuTourDe = ${oldAuTourDe}, lobbies[gameCode].alivePlayersID = ${lobbies[gameCode].alivePlayersID}`)
+                lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].alivePlayersID.indexOf(oldAuTourDe), 1) // on retire le joueur de la la liste d'index alivePlayersID
+                lobbies[gameCode].Joueurs[oldAuTourDe].state = "dead" // le state du joueur devient dead
+                setTimer(gameCode)
+                lobbies[gameCode].Joueurs.forEach(player => {
+                    player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: oldAuTourDe, alivePlayers: lobbies[gameCode].alivePlayersID, auTourDe: lobbies[gameCode].auTourDe}));
+                })
+            }
 
             // si ils sont que 2
             else{ 
-            log_lobbies(gameCode)
-            console.log("Le joueur", lobbies[gameCode].auTourDe+1, lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "doit mourrir")
+                log_lobbies(gameCode)
+                console.log("Le joueur", lobbies[gameCode].auTourDe+1, lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "doit mourrir")
 
 
-            lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].auTourDe, 1) 
-            lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].state = "dead" // le state du joueur devient dead
+                lobbies[gameCode].alivePlayersID.splice(lobbies[gameCode].auTourDe, 1) 
+                lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].state = "dead" // le state du joueur devient dead
 
-            lobbies[gameCode].Joueurs.forEach(player => {
-                player.ws.send(JSON.stringify({type: "last_kill", indexKilledPlayer: lobbies[gameCode].auTourDe}));
-                clearTimeout(lobbies[gameCode].timer); 
-            })
+                lobbies[gameCode].Joueurs.forEach(player => {
+                    player.ws.send(JSON.stringify({type: "last_kill", indexKilledPlayer: lobbies[gameCode].auTourDe}));
+                    clearTimeout(lobbies[gameCode].timer); 
+                })
 
 
-            lobbies[gameCode].Joueurs.forEach(player => {
-                player.ws.send(JSON.stringify({ type: "solo_win" }));
-                console.log("game gagnée")
-                clearTimeout(lobbies[gameCode].timer); 
-            })
-            log_lobbies(gameCode)
+                lobbies[gameCode].Joueurs.forEach(player => {
+                    player.ws.send(JSON.stringify({ type: "solo_win" }));
+                    console.log("game gagnée")
+                    clearTimeout(lobbies[gameCode].timer); 
+                })
+                log_lobbies(gameCode)
             }
         }
     }
