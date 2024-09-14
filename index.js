@@ -350,7 +350,7 @@ function handleSendAnswer(data, ws) {
                         // défini quelle goofy image il faut afficher 
                         var goofimage = "Goofy" + lobbies[gameCode].goofyRank
                         lobbies[gameCode].goofyRank += 1
-                        if(lobbies[gameCode].goofyRank == maxGoofy){
+                        if(lobbies[gameCode].goofyRank == maxGoofy+1){
                             lobbies[gameCode].goofyRank = 0
                         }
                         lobbies[gameCode].Joueurs.forEach(player => {
