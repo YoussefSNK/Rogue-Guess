@@ -52,6 +52,7 @@ app.use('/api', dbRoutes);
 app.use('/api', logRoutes);
 
 let lobbies = {};
+const maxGoofy = 9;
 
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
@@ -152,7 +153,8 @@ function handleCreateRoom(userInfo, ws) {
             }
         ],
         alivePlayersID: [],
-        pouvoirs_dispo: []
+        pouvoirs_dispo: [],
+        goofyRank: 0
     };
     ws.send(JSON.stringify({ type: 'room_created', gameCode }));
 }
@@ -340,11 +342,28 @@ function handleSendAnswer(data, ws) {
 
                 lobbies[gameCode].entities.splice(i, 1);
                 if (lobbies[gameCode].entities.length != 0){
-                    lobbies[gameCode].Joueurs.forEach(player => {
-                        player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
-                        setTimer(gameCode)
-                        lobbies[gameCode].perfectAnswer = true;
-                    });
+
+                    var nombreRandom = Math.floor(Math.random() * 3) // genere un nombre au pif 
+                    // si le joueur a goofillusion et que ça proc
+                    if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Goofillusion") & nombreRandom==1){
+
+                        // défini quelle goofy image il faut afficher 
+                        var goofimage = "Goofy" + lobbies[gameCode].goofyRank
+                        lobbies[gameCode].goofyRank += 1
+                        if(lobbies[gameCode].goofyRank == maxGoofy){
+                            lobbies[gameCode].goofyRank = 0
+                        }
+                        lobbies[gameCode].Joueurs.forEach(player => {
+                            player.ws.send(JSON.stringify({ type: "good_answer", entity: goofimage }));
+                        });  
+                    }
+                    else{
+                        lobbies[gameCode].Joueurs.forEach(player => {
+                            player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
+                        });
+                    }
+                    setTimer(gameCode)
+                    lobbies[gameCode].perfectAnswer = true;
                 }
                 else{
                     lobbies[gameCode].Joueurs.forEach(player => {
