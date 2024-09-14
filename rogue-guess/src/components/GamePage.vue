@@ -32,6 +32,27 @@
         </div>
     </div>
 
+    <div class="power-background" v-show="showPowerImage">
+        <img :src="powerImage" alt="power background" class="power-image">
+    </div>
+
+    <div :class="['side-panel', { expanded: isExpanded }]">
+      <div class="handle" @click="togglePanel">
+        <div :class="['handle-arrow', { 'handle-expanded-arrow': isExpanded }]"></div>
+      </div>
+      <div class="panel-content">
+        <div v-for="(power, index) in powersList" :key="index" class="power-container">
+          <img :src="getPowerImage(power.Image)" class="power-image-in-pannel animate-new-power" alt="">
+          <div class="power-description">{{ power.Description }}</div>
+          <p>{{ power.Name }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+        <div class="score" id="score"></div>
+    </div>
+
     <Transition name="slide-fade">
         <div v-if="gameEnded" class="end-screen">
             <h1>Fin de partie !</h1>
@@ -47,12 +68,17 @@
 export default {
   data() { /* eslint-disable */
     return {
+      showPowerImage: false,
+      powerImage: "",
       playersList: [], // Liste des joueurs en vie
+      powersList: [],
       remainingTime: 0,      
       countdownInterval: null,
+      score: 0,
       theme: "",
       inputText: '',
       inputDisabled: true,
+      isExpanded: false,
       gameEnded: false, // État pour savoir si le jeu est terminé
       winners: [] // Liste des gagnants
     };
@@ -75,8 +101,6 @@ export default {
   methods: {
     handleSocketMessage(event) {
       const data = JSON.parse(event.data);
-      // console.log(data);
-
       switch (data.type) {
         case 'request_game_users':
           this.playersList = data.alivePlayers;
@@ -120,6 +144,11 @@ export default {
         case 'last_kill':
           this.playersList[data.indexKilledPlayer].state = 'dead';
           break;
+        case 'gg':
+          this.isExpanded = true;
+          this.powersList.push(data.power);
+          break;
+          break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
           break;
@@ -145,15 +174,13 @@ export default {
     handleNotYourTurn() {
       this.inputDisabled = true;
     },
+    togglePanel() {
+      this.isExpanded = !this.isExpanded;
+    },
     animateRotation(rotationAngle, playerList) {-
       playerList.forEach((player) => {
         player.startAngle = player.angleOffset
         player.targetAngle = player.angleOffset - rotationAngle;
-
-        console.log(`player.name = ${player.name} startAngle = ${player.startAngle*180/Math.PI} -> targetAngle = ${player.targetAngle*180/Math.PI}`)
-        // console.log(`startAngle = ${player.startAngle*180/Math.PI}`)
-        // console.log(`targetAngle = ${player.targetAngle*180/Math.PI}`)
-      
       })
       const duration = 250;
       const startTime = performance.now();
@@ -168,7 +195,6 @@ export default {
       };
       requestAnimationFrame(stepAnimation);
     },
-
     animateDecrease(playerList, alivePlayersList, auTourDe) {
       const aliveCount = playerList.filter(player => player.state === "alive").length;
       const theta = Math.PI * 2/ (aliveCount + 1);
@@ -226,6 +252,17 @@ export default {
       img.src = require(`@/assets/images/entity/${text}.png`);  // Utilisation de Webpack pour gérer les assets
       img.classList.add('background-image');
       this.$refs.background.appendChild(img);
+    },
+    getPowerImage(imagePath) {
+      return require(`@/assets/images/${imagePath}`);
+    },
+    showBackgroundPower(imagePath) {  
+      this.powerImage = require(`@/assets/images/${imagePath}`);
+      this.showPowerImage = true;
+
+      setTimeout(() => {
+        this.showPowerImage = false;
+      }, 2000);
     },
     handleGameEnd(winners) {
       this.inputDisabled = true;
@@ -352,6 +389,34 @@ export default {
     transition: opacity 0.5s ease-in-out;
 }
 
+.power-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0; /* Derrière le gameContainer mais devant le background */
+}
+.power-image {
+  width: 100px;
+  height: 100px;
+  opacity: 1;
+  animation: growAndFade 2s forwards;
+}
+@keyframes growAndFade {
+  0% {
+    width: 100px;
+    height: 100px;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+
+
 .header {
     position: absolute;
     top: 0;
@@ -360,7 +425,7 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    z-index: 2;
+    z-index: 3;
 }
 .theme, .turn-info, .timer {
     text-align: center;
@@ -369,6 +434,29 @@ export default {
     font-weight: bold;
     margin: 10px 0;
 }
+
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 3;
+}
+.score {
+    text-align: center;
+    font-size: 24px;
+    color: #ecf0f1;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+
+
+
 
 
 .game-container {
@@ -389,7 +477,6 @@ export default {
     display: block;
     margin: 20px auto;
 }
-
 #game-input {
     text-align: center;
     font-size: 24px;
@@ -415,6 +502,153 @@ export default {
     transition: transform 1s ease; 
     pointer-events: auto;
 }
+
+
+
+
+
+
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -18%;
+  width: 20%;
+  height: 100%;
+  background-color: #000000;
+  color: white;
+  border-left: 2px solid white; /* Contour blanc uniquement sur le côté gauche */
+  transition: right 0.5s ease;
+  z-index: 10;
+}
+
+.side-panel.expanded {
+  right: 0; /* Panneau entièrement visible */
+}
+
+.handle {
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  width: 80px;
+  height: 80px;
+  background-color: #000000;
+  border-radius: 50%; /* Pour obtenir un cercle */
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 6px solid transparent; /* On va utiliser ::before pour dessiner une partie de la bordure */
+  position: relative; /* Important pour le pseudo-élément */
+}
+.handle::before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border-left: 6px solid white; /* Ajoute une ligne blanche sur la moitié gauche du cercle */
+  left: 0;
+  top: 0;
+}
+
+.handle-arrow {
+  width: 0;
+  height: 0;
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-right: 24px solid white; /* Flèche vers la gauche */
+  transition: transform 0.5s ease;
+}
+
+.handle-expanded-arrow {
+  transform: rotate(180deg); /* Flèche tournée vers la droite lorsque le panneau est ouvert */
+}
+
+.panel-content {
+  padding: 20px;
+}
+
+button {
+  background-color: #666;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.power-image-in-pannel {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  position: relative;
+  transition: opacity 2s, transform 2s;
+  border-radius: 15px;
+}
+
+.animate-new-power {
+  opacity: 1;
+  transform: scale(0.5);
+  animation: growAndShrink 1s forwards;
+}
+
+@keyframes growAndShrink {
+  0% {
+    opacity: 1;   /* Commence à être invisible */
+    transform: scale(0); /* Taille 0% */
+  }
+  90% {
+    opacity: 1;   /* Devient complètement visible */
+    transform: scale(1.2); /* Taille à 120% */
+  }
+  100% {
+    opacity: 1;   /* Toujours visible */
+    transform: scale(1); /* Revient à 100% */
+  }
+}
+
+.power-image-in-pannel:hover {
+  filter: brightness(20%);
+}
+
+.power-container {
+  position: relative;
+  display: inline-block;
+  width: 150px; /* Assure que le conteneur a la même largeur que l'image */
+  height: 150px; /* Même hauteur que l'image */
+  margin-bottom: 10px;
+}
+
+.power-description {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Le texte ne doit pas bloquer les interactions avec la souris */
+  max-width: 90%; /* Limite la largeur du texte à 90% de l'image */
+  word-wrap: break-word; /* Coupe les mots trop longs */
+  white-space: normal; /* Permet au texte d'aller à la ligne si nécessaire */
+
+  z-index: 1;
+}
+
+/* Quand la souris est sur l'image, la description devient visible */
+.power-container:hover .power-description {
+  opacity: 1;
+}
+
+
+
+
+
+
+
 
 
 
