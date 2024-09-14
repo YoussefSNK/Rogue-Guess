@@ -393,6 +393,23 @@ function changeToNextPlayer(gameCode){
 function handleTimerEnd(gameCode) {
     if (lobbies[gameCode]) {
         lobbies[gameCode].perfectAnswer = true;
+
+        // si GA
+        if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Ange Gardien")) {
+            Object.assign(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.find(p => p.Name === "Ange Gardien"), {
+                Name: "Ange Gardien Brisé",
+                Description: "C'est expiré",
+                Image: "power/Ange_Gardien_Used.png"
+            });
+            lobbies[gameCode].Joueurs.forEach(player => {
+                player.ws.send(JSON.stringify({type: "gardian_angel_procd"}));
+            })
+            changeToNextPlayer(gameCode)
+            setTimer(gameCode)
+        }
+
+        // si pas de GA
+        else{
         // si ils sont pas que 2
         if (lobbies[gameCode].alivePlayersID.length != 2){
             const oldAuTourDe = lobbies[gameCode].auTourDe
@@ -419,7 +436,9 @@ function handleTimerEnd(gameCode) {
                 player.ws.send(JSON.stringify({type: "kill", indexKilledPlayer: oldAuTourDe, alivePlayers: lobbies[gameCode].alivePlayersID, auTourDe: lobbies[gameCode].auTourDe}));
             })
         }
-        else{ // CE CAS N'EST PEUT ÊTRE PAS A JOUR
+
+            // si ils sont que 2
+            else{ 
             log_lobbies(gameCode)
             console.log("Le joueur", lobbies[gameCode].auTourDe+1, lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "doit mourrir")
 
@@ -438,9 +457,8 @@ function handleTimerEnd(gameCode) {
                 console.log("game gagnée")
                 clearTimeout(lobbies[gameCode].timer); 
             })
-
             log_lobbies(gameCode)
-
+            }
         }
     }
 }

@@ -148,6 +148,18 @@ export default {
           this.isExpanded = true;
           this.powersList.push(data.power);
           break;
+        case 'gardian_angel_procd':
+          this.showBackgroundPower("power/Ange_Gardien.png");
+          this.animateRotation(Math.PI * 2 / this.playersList.filter(player => player.state === "alive").length, this.playersList);
+          
+          const foundPower = this.powersList.find(power => power.Name === "Ange Gardien");
+
+          if(foundPower){
+            foundPower.Name = "Ange Gardien Brisé";
+            foundPower.Description = "C'est expiré";
+            foundPower.Image = "power/Ange_Gardien_Used.png";
+          }
+
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
