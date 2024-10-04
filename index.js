@@ -39,11 +39,6 @@ app.set('views', path.join(__dirname, 'app', 'views'));
 app.set('view engine', 'ejs');
 
 
-// Routes
-app.get('/', (req, res) => {
-    res.render('index');
-});
-
 app.post('/formulaire', (req, res) => {
     dbController.createFormEntry(req, res);
 });
