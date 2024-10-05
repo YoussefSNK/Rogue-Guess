@@ -343,11 +343,25 @@ function handleSendAnswer(data, ws) {
             }
         }
 
-        // Vérification 2 : Projet Voltaire (à implémenter plus tard)
+        // Vérification 2 : Projet Voltaire
         if (!answerValidated) {
-            entityIndex = lobbies
-        }
+            const playerHasVoltairePower = lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Projet Voltaire");
+            if (playerHasVoltairePower) {
+                // Chercher toutes les entités qui ont une différence d'un caractère avec la réponse du joueur
+                const possibleMatches = lobbies[gameCode].entities.filter(entity => isOneCharDifferent(normalizeString(entity.name), normalizedPlayerAnswer));
 
+                // Si une seule entité correspond, valider la réponse
+                if (possibleMatches.length === 1) {
+                    answerValidated = true;
+                    sendMessageToAllPlayers(lobbies[gameCode], { type: "power_procd", power_name: "power/Projet_Voltaire.png" });
+                    entityIndex = lobbies[gameCode].entities.findIndex(entity => entity.name === possibleMatches[0].name);
+                    
+                    // Logique pour traiter la réponse valide
+                    addToScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], normalizedPlayerAnswer.length - 1);  // On pourrait ajuster le score si nécessaire
+                    checkScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], gameCode);
+                }
+            }
+        }
 
         // Traitement de la réponse validée
         if (answerValidated && entityIndex !== -1) {
@@ -507,7 +521,41 @@ function addToScore(joueur, valeur){
     console.log(valeur, joueur.score, joueur.total_score)
 }
 
+function isOneCharDifferent(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
 
+    if (Math.abs(len1 - len2) > 1) {
+        return false; // Si la différence de longueur est plus d'un caractère, on rejette
+    }
+    let differences = 0;
+    let i = 0, j = 0;
+    while (i < len1 && j < len2) {
+        if (str1[i] !== str2[j]) {
+            differences++;
+            if (differences > 1) return false;
+            // Cas d'inversion de deux lettres adjacentes
+            if (i < len1 - 1 && j < len2 - 1 && str1[i] === str2[j + 1] && str1[i + 1] === str2[j]) {
+                i += 2; // On avance de deux positions pour sauter les lettres inversées
+                j += 2;
+            } else {
+                // Cas normal où il y a une différence d'un caractère
+                if (len1 > len2) { // Saut dans la chaîne la plus longue
+                    i++;
+                } else if (len2 > len1) {
+                    j++; 
+                } else {
+                    i++;
+                    j++;
+                }
+            }
+        } else {
+            i++;
+            j++;
+        }
+    }
+    return differences === 1 || (differences === 0 && Math.abs(len1 - len2) === 1);
+}
 
 wss.on('error', (error) => {
     console.error('Erreur WebSocket Server:', error);

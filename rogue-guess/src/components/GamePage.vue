@@ -159,7 +159,9 @@ export default {
             foundPower.Description = "C'est expiré";
             foundPower.Image = "power/Ange_Gardien_Used.png";
           }
-
+          break;
+        case 'power_procd':
+          this.showBackgroundPower(data.power_name);
           break;
         default:
           console.warn(`Unknown message type: ${data.type}`);
