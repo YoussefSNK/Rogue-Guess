@@ -375,7 +375,7 @@ function handleSendAnswer(data, ws) {
 
 //prend un lobby par son gameCode, met à jour le joueur dont c'est le tour, annonce à son lobby
 function changeToNextPlayer(gameCode){
-
+    lobbies[gameCode].isPerfectAnswer = true;
     const vivants = lobbies[gameCode].alivePlayersID;
     const indexActuel = vivants.indexOf(lobbies[gameCode].auTourDe);
     const prochainIndex = (indexActuel + 1) % vivants.length;
@@ -395,8 +395,6 @@ function changeToNextPlayer(gameCode){
 // quand le time arrive à sa fin -> tue le joueur
 function handleTimerEnd(gameCode) {
     if (lobbies[gameCode]) {
-        lobbies[gameCode].isPerfectAnswer = true;
-
         // si GA
         if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Ange Gardien")) {
             Object.assign(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.find(p => p.Name === "Ange Gardien"), {
