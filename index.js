@@ -132,7 +132,7 @@ function handleCreateRoom(userInfo, ws) {
 
     lobbies[gameCode] = {
         enCours: false,
-        perfectAnswer: true, //permettra de check si la réponse est parfaite (est true tant qu'une mauvaise réponse n'a pas été envoyée)
+        isPerfectAnswer: true, //permettra de check si la réponse est parfaite (est true tant qu'une mauvaise réponse n'a pas été envoyée)
         auTourDe: null, //ce sera l'index du joueur dont c'est le tour
         theme: "",
         entities: [],
@@ -396,7 +396,7 @@ function changeToNextPlayer(gameCode){
 // quand le time arrive à sa fin -> tue le joueur
 function handleTimerEnd(gameCode) {
     if (lobbies[gameCode]) {
-        lobbies[gameCode].perfectAnswer = true;
+        lobbies[gameCode].isPerfectAnswer = true;
 
         // si GA
         if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Ange Gardien")) {
