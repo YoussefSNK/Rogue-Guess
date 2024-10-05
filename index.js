@@ -471,7 +471,7 @@ function setTimer(gameCode) {
     if (lobbies[gameCode].timer) {
         clearTimeout(lobbies[gameCode].timer);
     }
-    const timerDuration = 10000; // (10 secondes)
+    const timerDuration = 40000; // (40 secondes)
     lobbies[gameCode].timer = setTimeout(() => {
         handleTimerEnd(gameCode);
     }, timerDuration);
