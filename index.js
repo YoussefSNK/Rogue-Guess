@@ -309,77 +309,67 @@ function handleTextUpdate(data, ws) {
 function handleSendAnswer(data, ws) {
     const gameCode = Object.keys(lobbies).find(code => lobbies[code].Joueurs.some(player => player.ws === ws));
     if (gameCode && lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].ws == ws) {
-    
-        const message = JSON.stringify({  // vider l'input de tout le monde
-            type: 'text_update', 
-            message: ''})
-        lobbies[gameCode].Joueurs.forEach(player => {
-            player.ws.send(message);
-        });
+        
+        sendMessageToAllPlayers(lobbies[gameCode], {type: 'text_update', message: ''});  // Vider l'input de tout le monde
+        let answerValidated = false;
+        let entityIndex = -1;  // Stocke l'index de l'entité validée
 
-        var isGoodAnswer = false
-        for (let i = lobbies[gameCode].entities.length - 1; i >= 0; i--) {
-            if (lobbies[gameCode].entities[i] === data.text) {  //dans le cas où la réponse est bonne
-                isGoodAnswer = true
-                if (lobbies[gameCode].perfectAnswer){
-                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].total_score += data.text.length
-                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].score += data.text.length
-                    checkScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], gameCode)
-                    console.log("\n[Pouvoirs restants] :")
-                    lobbies[gameCode].pouvoirs_dispo.forEach(pouvoir => {
-                        console.log(pouvoir.Name)
-                    })
-                    console.log("\n[Pouvoirs de", lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].name, "]")
-                    lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.forEach(pouvoir => {
-                        console.log(pouvoir.Name)
-                    })
-                }
+        const normalizedPlayerAnswer = normalizeString(data.text); // Normalisation de la réponse joueur
 
-                lobbies[gameCode].entities.splice(i, 1);
-                if (lobbies[gameCode].entities.length != 0){
+        // Vérification 1 : Réponse (+parfaite)
+        if (!answerValidated) {
+            entityIndex = lobbies[gameCode].entities.findIndex(entity => normalizeString(entity.name) === normalizedPlayerAnswer);
+            if (entityIndex !== -1) {
+                answerValidated = true;
+                let isGoofyImage = false;
 
-                    var nombreRandom = Math.floor(Math.random() * 3) // genere un nombre au pif 
-                    // si le joueur a goofillusion et que ça proc
-                    if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Goofillusion") & nombreRandom==1){
-
-                        // défini quelle goofy image il faut afficher 
-                        var goofimage = "Goofy" + lobbies[gameCode].goofyRank
-                        lobbies[gameCode].goofyRank += 1
-                        if(lobbies[gameCode].goofyRank == maxGoofy+1){
-                            lobbies[gameCode].goofyRank = 0
-                        }
-                        lobbies[gameCode].Joueurs.forEach(player => {
-                            player.ws.send(JSON.stringify({ type: "good_answer", entity: goofimage }));
-                        });  
+                // Si réponse parfaite
+                if (lobbies[gameCode].isPerfectAnswer) {
+                    // Check si Goofillusion proc --- à transformer en fonction
+                    const nombreRandom = Math.floor(Math.random() * 3);
+                    if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Goofillusion") && nombreRandom === 1) {
+                        const goofimage = "Goofy" + lobbies[gameCode].goofyRank;
+                        lobbies[gameCode].goofyRank = (lobbies[gameCode].goofyRank + 1) % (maxGoofy + 1);
+                        isGoofyImage = true;
                     }
-                    else{
-                        lobbies[gameCode].Joueurs.forEach(player => {
-                            player.ws.send(JSON.stringify({ type: "good_answer", entity: data.text }));
-                        });
-                    }
-                    setTimer(gameCode)
-                    lobbies[gameCode].perfectAnswer = true;
+                    // Ajoute le score
+                    addToScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], normalizedPlayerAnswer.length);
+                    checkScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], gameCode);
+                } 
+                // Si réponse pas parfaite
+                else {
+                    addToScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], Math.floor(normalizedPlayerAnswer.length / 2));  // ça marche pas
+                    checkScore(lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe], gameCode);
                 }
-                else{
-                    lobbies[gameCode].Joueurs.forEach(player => {
-                        player.ws.send(JSON.stringify({ type: "end_of_list", entity: data.text }));
-                        console.log("game fini")
-                        clearTimeout(lobbies[gameCode].timer);
-                        
-                    })
-                }
-                
-                changeToNextPlayer(gameCode)
-                setTimer(gameCode)
-                break;
             }
-            else {
-            }
-            // else if (){  le cas, si la réponse n'est pas parfaite, maintenant on vérifie avec projet voltaire
-            // }
         }
-        if (!isGoodAnswer){
-            lobbies[gameCode].perfectAnswer = false;
+
+        // Vérification 2 : Projet Voltaire (à implémenter plus tard)
+        if (!answerValidated) {
+            entityIndex = lobbies
+        }
+
+
+        // Traitement de la réponse validée
+        if (answerValidated && entityIndex !== -1) {
+            const entity = lobbies[gameCode].entities[entityIndex]; // Récupération de l'entité correspondante
+
+            // Supprimer l'entité validée de la liste
+            lobbies[gameCode].entities.splice(entityIndex, 1);
+
+            // Vérifier s'il reste des entités dans la liste
+            if (lobbies[gameCode].entities.length > 0) {
+                sendMessageToAllPlayers(lobbies[gameCode], { type: "good_answer", entity: entity.image });
+                setTimer(gameCode);
+            } else {
+                sendMessageToAllPlayers(lobbies[gameCode], { type: "end_of_list", entity: entity.image });
+                clearTimeout(lobbies[gameCode].timer);
+            }
+
+            changeToNextPlayer(gameCode);
+            setTimer(gameCode);
+        } else {
+            lobbies[gameCode].isPerfectAnswer = false;
         }
     }
 }
@@ -503,6 +493,21 @@ function checkScore(joueur, gameCode){
         }
         console.log("dans checkScore", joueur.name, joueur.pouvoirs)
     }
+}
+
+function normalizeString(str) {
+    return str.toLowerCase().replace(/[^\w]/g, '').trim();
+}
+
+function sendMessageToAllPlayers(lobby, message) {
+    const serializedMessage = JSON.stringify(message);
+    lobby.Joueurs.forEach(player => player.ws.send(serializedMessage));
+}
+
+function addToScore(joueur, valeur){
+    joueur.total_score += valeur
+    joueur.score += valeur
+    console.log(valeur, joueur.score, joueur.total_score)
 }
 
 
