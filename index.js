@@ -248,13 +248,12 @@ function handleStartGame(data, ws) {
                       return;
                     }
                   
-                lobbies[gameCode].entities = entities;
-                lobbies[gameCode].theme = data.title;
-                lobbies[gameCode].enCours = true;
+                    lobbies[gameCode].entities = entities;
+                    lobbies[gameCode].theme = data.title;
+                    lobbies[gameCode].enCours = true;
                     lobbies[gameCode].pouvoirs_dispo = powers;
                   
-                    console.log(powers);
-                setTimer(gameCode);
+                    setTimer(gameCode);
                   });
 
                 
