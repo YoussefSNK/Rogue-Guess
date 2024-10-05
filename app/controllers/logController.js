@@ -41,8 +41,11 @@ exports.getEntitiesBySQLRequest = (sqlRequest, callback) => {
           console.error('Erreur lors de la récupération des entités par requête SQL:', err);
           callback(err, null);
       } else {
-          const entities = rows.map(row => row.Name);
-          // console.log('Entités récupérées pour la requête SQL:', entities);
+          const entities = rows.map(row => ({
+              name: row.Name,   // Nom de l'entité
+              image: row.Image  // Image associée à l'entité
+          }));
+
           callback(null, entities);
       }
   });

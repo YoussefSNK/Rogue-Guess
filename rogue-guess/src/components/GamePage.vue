@@ -261,7 +261,7 @@ export default {
     },
     addBackgroundImage(text) {  
       const img = document.createElement('img');
-      img.src = require(`@/assets/images/entity/${text}.png`);  // Utilisation de Webpack pour gérer les assets
+      img.src = require(`@/assets/images/entity/${text}`);  // Utilisation de Webpack pour gérer les assets
       img.classList.add('background-image');
       this.$refs.background.appendChild(img);
     },

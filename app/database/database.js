@@ -535,10 +535,10 @@ function insertInitialData() {
 
   const insertQueryRequest = `
     INSERT INTO Request (Title, SQL_Request, Image) VALUES
-    ("Joueurs de Raimon", "SELECT Name FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
-    ("League of legends", "SELECT Name FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
-    ("Pokémon 1G", "SELECT Name FROM Entity WHERE Licence = 'Pokémon 1G'", "pokemon.png"),
-    ("Capitales Européennes", "SELECT Name FROM Entity WHERE Licence = 'Capitales Europe'", "Capitales.png")
+    ("Joueurs de Raimon", "SELECT Name, Image FROM Entity WHERE Licence = 'Inazuma Eleven'", "inazuma.png"),
+    ("League of legends", "SELECT Name, Image FROM Entity WHERE Licence = 'League of legends'", "lol.png"),
+    ("Pokémon 1G", "SELECT Name, Image FROM Entity WHERE Licence = 'Pokémon 1G'", "pokemon.png"),
+    ("Capitales Européennes", "SELECT Name, Image FROM Entity WHERE Licence = 'Capitales Europe'", "Capitales.png")
     ;
   `;
 
