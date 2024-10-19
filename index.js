@@ -312,7 +312,8 @@ function handleSendAnswer(data, ws) {
         sendMessageToAllPlayers(lobbies[gameCode], {type: 'text_update', message: ''});  // Vider l'input de tout le monde
         let answerValidated = false;
         let entityIndex = -1;  // Stocke l'index de l'entité validée
-
+        let isGoofyImage = false;
+        let goofimage = ""
         const normalizedPlayerAnswer = normalizeString(data.text); // Normalisation de la réponse joueur
 
         // Vérification 1 : Réponse (+parfaite)
@@ -320,14 +321,13 @@ function handleSendAnswer(data, ws) {
             entityIndex = lobbies[gameCode].entities.findIndex(entity => normalizeString(entity.name) === normalizedPlayerAnswer);
             if (entityIndex !== -1) {
                 answerValidated = true;
-                let isGoofyImage = false;
 
                 // Si réponse parfaite
                 if (lobbies[gameCode].isPerfectAnswer) {
                     // Check si Goofillusion proc --- à transformer en fonction
                     const nombreRandom = Math.floor(Math.random() * 3);
                     if (lobbies[gameCode].Joueurs[lobbies[gameCode].auTourDe].pouvoirs.some(p => p.Name === "Goofillusion") && nombreRandom === 1) {
-                        const goofimage = "Goofy" + lobbies[gameCode].goofyRank;
+                        goofimage = "Goofy" + lobbies[gameCode].goofyRank + ".png";
                         lobbies[gameCode].goofyRank = (lobbies[gameCode].goofyRank + 1) % (maxGoofy + 1);
                         isGoofyImage = true;
                     }
@@ -369,6 +369,10 @@ function handleSendAnswer(data, ws) {
 
             // Supprimer l'entité validée de la liste
             lobbies[gameCode].entities.splice(entityIndex, 1);
+
+            if (isGoofyImage){
+                entity.image = goofimage
+            }
 
             // Vérifier s'il reste des entités dans la liste
             if (lobbies[gameCode].entities.length > 0) {
